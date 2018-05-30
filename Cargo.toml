@@ -1,7 +1,0 @@
-[package]
-name = "hello_cargo"
-version = "0.1.0"
-authors = ["Dragan <d.novakovic1810@yahoo.com>"]
-
-[dependencies]
-rand = "0.3.14"
