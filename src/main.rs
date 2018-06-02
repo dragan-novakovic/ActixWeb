@@ -1,3 +1,73 @@
+// SNAKE GAME NEXT
+
+/*
+
+use std::fs::File;
+fn main() {
+    let f = File::open("test.txt");
+
+    let f = match f {
+        Ok(file) => file,
+        Err(error) => panic!("There was a problem opening the file: {:?}", error),
+    };
+}
+ */
+
+/*
+fn division(x: f64, y: f64) -> Option<f64> {
+    if y == 0.0 {
+        None
+    } else {
+        Some(x / y)
+    }
+}
+
+fn main() {
+    let res = division(5.0, 7.0);
+    match res {
+        Some(x) => println!("{:.10}", x),
+        None => println!("cannot divide by 0"),
+    }
+}
+ */
+
+/*
+enum Shape {
+    Rectangle { width: u32, height: u32 },
+    Square(u32),
+    Circle(f64),
+}
+
+impl Shape {
+    fn area(&self) -> f64 {
+        match *self {
+            Shape::Rectangle { width, height } => (width * height) as f64,
+            Shape::Square(ref s) => (s * s) as f64,
+            Shape::Circle(ref r) => 3.14 * (r * r) as f64, //vec je f64
+        }
+    }
+}
+
+fn main() {
+    let r = Shape::Rectangle {
+        width: 10,
+        height: 70,
+    };
+    let s = Shape::Square(10);
+    let c = Shape::Circle(4.5);
+
+    let ar = r.area();
+    println!("{}", ar);
+
+    let ass = s.area();
+    println!("{}", ass);
+
+    let ac = c.area();
+    println!("{}", ac);
+}
+*/
+
+/*
 use std::fmt;
 
 #[derive(Debug)]
@@ -34,3 +104,5 @@ fn main() {
 
     println!("{}", o);
 }
+
+ */
