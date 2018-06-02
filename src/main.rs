@@ -31,4 +31,6 @@ fn main() {
 
     o.show();
     k.show();
+
+    println!("{}", o);
 }
