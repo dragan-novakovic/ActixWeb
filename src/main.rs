@@ -1,5 +1,11 @@
-// SNAKE GAME NEXT
+extern crate piston_window;
+extern crate rand;
 
+mod draw;
+
+fn main() {
+    println!("Hello World");
+}
 /*
 
 use std::fs::File;
