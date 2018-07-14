@@ -1,8 +1,6 @@
 [package]
-name = "start_world"
+name = "learning"
 version = "0.1.0"
-authors = ["Dragan1810 <d.novakovic1810@yahoo.com>"]
+authors = ["Dragan <d.novakovic1810@yahoo.com>"]
 
 [dependencies]
-rand="0.4.2"
-piston_window="0.80.0"
