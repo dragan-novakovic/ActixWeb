@@ -31,18 +31,8 @@ fn favicon() -> Result<fs::NamedFile> {
 
 /// simple index handler
 #[get("/welcome")]
-fn welcome(session: Session, req: HttpRequest) -> Result<HttpResponse> {
+fn welcome(req: HttpRequest) -> Result<HttpResponse> {
     println!("Welcome route {:?}", req);
-
-    // session
-    let mut counter = 1;
-    if let Some(count) = session.get::<i32>("counter")? {
-        println!("SESSION value: {}", count);
-        counter = count + 1;
-    }
-
-    // set counter to session
-    session.set("counter", counter)?;
 
     // response
     Ok(HttpResponse::build(StatusCode::OK)
@@ -95,12 +85,10 @@ fn main() -> io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            // enable logger
             .wrap(middleware::Logger::default())
-            // register favicon
             .service(favicon)
-            // register simple route, handle all methods
             .service(welcome)
+            .configure(router::lots)
             // with path parameters
             .service(web::resource("/user/{name}").route(web::get().to(with_param)))
             // async handler
