@@ -1,18 +1,26 @@
 #[macro_use]
 extern crate actix_web;
+#[macro_use] 
+extern crate serde_derive;
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate dotenv_codegen;
+extern crate dotenv;
 extern crate listenfd;
-#[macro_use] extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
 use std::{env, io};
+use dotenv::dotenv;
 // use std::net::TcpListener;
-
 // use listenfd::ListenFd;
 use actix_files as fs;
-use actix_session::{CookieSession, Session};
+// use actix_session::{CookieSession, Session};
 use actix_web::http::{header, Method, StatusCode};
 use actix_web::{ error, guard, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Result };
+use diesel::prelude::*;
+use diesel::r2d2::{self, ConnectionManager};
 use bytes::Bytes;
 use futures::unsync::mpsc;
 use futures::{future::ok, Future, Stream};
@@ -21,6 +29,9 @@ use futures::{future::ok, Future, Stream};
 mod api;
 mod model;
 mod router;
+
+
+type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 
 /// favicon handler
@@ -32,8 +43,6 @@ fn favicon() -> Result<fs::NamedFile> {
 /// simple index handler
 #[get("/welcome")]
 fn welcome(req: HttpRequest) -> Result<HttpResponse> {
-    println!("Welcome route {:?}", req);
-
     // response
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type("text/html; charset=utf-8")
@@ -54,27 +63,10 @@ fn index_async(req: HttpRequest) -> impl Future<Item = HttpResponse, Error = Err
         .body(format!("Hello {}!", req.match_info().get("name").unwrap())))
 }
 
-/// async body
-fn index_async_body(path: web::Path<String>) -> HttpResponse {
-    let text = format!("Hello {}!", *path);
 
-    let (tx, rx_body) = mpsc::unbounded();
-    let _ = tx.unbounded_send(Bytes::from(text.as_bytes()));
-
-    HttpResponse::Ok()
-        .streaming(rx_body.map_err(|_| error::ErrorBadRequest("bad request")))
-}
-
-/// handler with path parameters like `/user/{name}/`
-fn with_param(req: HttpRequest, path: web::Path<(String,)>) -> HttpResponse {
-    println!("{:?}", req);
-
-    HttpResponse::Ok()
-        .content_type("text/plain")
-        .body(format!("Hello {}!", path.0))
-}
 
 fn main() -> io::Result<()> {
+    dotenv().ok();
     env::set_var("RUST_LOG", "actix_web=debug");
     env_logger::init();
 
@@ -83,22 +75,22 @@ fn main() -> io::Result<()> {
 
     let sys = actix_rt::System::new("basic-example");
 
+     // Start 3 db executor actors
+
+    println!("QQQ {}", env::var("DATABASE_URL").expect("ENV SUCKZZZ"));
+    let manager = ConnectionManager::<PgConnection>::new("HELLO");
+    let pool = r2d2::Pool::builder()
+        .build(manager)
+        .expect("Failed to create pool.");
+
     HttpServer::new(|| {
         App::new()
             .wrap(middleware::Logger::default())
             .service(favicon)
             .service(welcome)
             .configure(router::lots)
-            // with path parameters
-            .service(web::resource("/user/{name}").route(web::get().to(with_param)))
-            // async handler
             .service(
                 web::resource("/async/{name}").route(web::get().to_async(index_async)),
-            )
-            // async handler
-            .service(
-                web::resource("/async-body/{name}")
-                    .route(web::get().to(index_async_body)),
             )
             .service(
                 web::resource("/test").to(|req: HttpRequest| match *req.method() {
@@ -136,3 +128,30 @@ fn main() -> io::Result<()> {
     println!("Starting http server: 127.0.0.1:8080");
     sys.run()
 }
+
+/*
+
+/// async body
+fn index_async_body(path: web::Path<String>) -> HttpResponse {
+    let text = format!("Hello {}!", *path);
+
+    let (tx, rx_body) = mpsc::unbounded();
+    let _ = tx.unbounded_send(Bytes::from(text.as_bytes()));
+
+    HttpResponse::Ok()
+        .streaming(rx_body.map_err(|_| error::ErrorBadRequest("bad request")))
+}
+
+/// handler with path parameters like `/user/{name}/`
+fn with_param(req: HttpRequest, path: web::Path<(String,)>) -> HttpResponse {
+    println!("{:?}", req);
+
+    HttpResponse::Ok()
+        .content_type("text/plain")
+        .body(format!("Hello {}!", path.0))
+}
+
+
+
+
+ */
