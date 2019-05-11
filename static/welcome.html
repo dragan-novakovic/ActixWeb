@@ -1,6 +1,45 @@
-<!DOCTYPE html><html><head><title>actix - basics</title>
-    <link rel="shortcut icon" type="image/x-icon" href="/favicon" /></head>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ACTIX-WEB</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon" />
+    <style>
+      form {
+        display: flex;
+        flex-direction: column;
+        max-width: 33vw;
+        justify-content: flex-end;
+      }
+    </style>
+  </head>
   <body>
-    <h1>Welcome <img width="30px" height="30px" src="/static/actixLogo.png" /></h1>
+    <h1>Welcome <img width="30px" src="/static/actixLogo.png" /></h1>
+    <main>
+      <form method="POST">
+        <h3>Lot Form</h3>
+        <label>Lot Name<input name='name' required/></label>
+        <label>Description<input name='description' required/></label>
+        <label>Price<input name="price" type="number" required/></label>
+        <input value="Submit" type="submit"/>
+      </form>
+    </main>
+    <script type="text/javascript">
+    document.forms[0].addEventListener("submit", (e) => {e.preventDefault(); submitForm()})
+
+    function submitForm() {
+      const formData = [...document.forms[0].elements].slice(0,-1).reduce((acc, inp) => ({...acc,[inp.name]:inp.name === 'price' ? +inp.value : inp.value}),{})
+      console.log(formData)
+      fetch('/lots', {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, *same-origin, omit
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData)
+      })
+    }
+    </script>
   </body>
 </html>

@@ -4,34 +4,26 @@ extern crate actix_web;
 extern crate serde_derive;
 #[macro_use]
 extern crate diesel;
-#[macro_use]
-extern crate dotenv_codegen;
-extern crate dotenv;
-extern crate listenfd;
 extern crate serde;
 extern crate serde_json;
 
-use std::{env, io};
-use dotenv::dotenv;
-// use std::net::TcpListener;
-// use listenfd::ListenFd;
+use std::{env, io };
 use actix_files as fs;
 // use actix_session::{CookieSession, Session};
-use actix_web::http::{header, Method, StatusCode};
-use actix_web::{ error, guard, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Result };
+use actix_web::http::{ Method, StatusCode};
+use actix_web::{ guard, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Result };
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
-use bytes::Bytes;
-use futures::unsync::mpsc;
-use futures::{future::ok, Future, Stream};
+// use bytes::Bytes;
+// use futures::unsync::mpsc;
+use futures::{future::ok, Future };
 
 
 mod api;
 mod model;
 mod router;
+mod schema;
 
-
-type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 
 /// favicon handler
@@ -40,51 +32,40 @@ fn favicon() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("static/favicon.ico")?)
 }
 
-/// simple index handler
-#[get("/welcome")]
+#[get("/")]
 fn welcome(req: HttpRequest) -> Result<HttpResponse> {
-    // response
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type("text/html; charset=utf-8")
         .body(include_str!("../static/welcome.html")))
 }
 
-/// 404 handler
 fn p404() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("static/404.html")?.set_status_code(StatusCode::NOT_FOUND))
 }
 
 /// async handler
 fn index_async(req: HttpRequest) -> impl Future<Item = HttpResponse, Error = Error> {
-    println!("ASYNC INDEX{:?}", req);
-
     ok(HttpResponse::Ok()
         .content_type("text/html")
         .body(format!("Hello {}!", req.match_info().get("name").unwrap())))
 }
 
 
-
 fn main() -> io::Result<()> {
-    dotenv().ok();
     env::set_var("RUST_LOG", "actix_web=debug");
     env_logger::init();
-
-  //  let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
-  //  listener.set_nonblocking(true).expect("Cannot set non-blocking");
 
     let sys = actix_rt::System::new("basic-example");
 
      // Start 3 db executor actors
-
-    println!("QQQ {}", env::var("DATABASE_URL").expect("ENV SUCKZZZ"));
-    let manager = ConnectionManager::<PgConnection>::new("HELLO");
+    let manager = ConnectionManager::<PgConnection>::new("postgres://dragan1810:123@localhost/lolspot");
     let pool = r2d2::Pool::builder()
         .build(manager)
         .expect("Failed to create pool.");
 
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
+            .data(pool.clone())
             .wrap(middleware::Logger::default())
             .service(favicon)
             .service(welcome)
@@ -99,21 +80,8 @@ fn main() -> io::Result<()> {
                     _ => HttpResponse::NotFound(),
                 }),
             )
-            .service(web::resource("/error").to(|| {
-                error::InternalError::new(
-                    io::Error::new(io::ErrorKind::Other, "test"),
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                )
-            }))
             // static files
             .service(fs::Files::new("/static", "static").show_files_listing())
-            // redirect
-            .service(web::resource("/").route(web::get().to(|req: HttpRequest| {
-                println!("{:?}", req);
-                HttpResponse::Found()
-                    .header(header::LOCATION, "static/welcome.html")
-                    .finish()
-            })))
             // default
             .default_service( web::resource("").route(web::get().to(p404)).route(
                         web::route()
