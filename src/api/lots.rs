@@ -19,7 +19,9 @@ fn query(lot: NewLot, pool: web::Data<Pool> ) -> Result<Lot, diesel::result::Err
     };
     let conn: &PgConnection = &pool.get().unwrap();
 
-    diesel::insert_into(lots).values(&new_lot).execute(conn)?;
+    diesel::insert_into(lots)
+            .values(&new_lot)
+            .execute(conn)?;
 
     let mut lots_list = lots.load::<Lot>(conn)?;
     Ok(lots_list.pop().unwrap())
