@@ -1,30 +1,30 @@
 #[macro_use]
 extern crate actix_web;
-#[macro_use] 
+#[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate diesel;
+
 extern crate serde;
 extern crate serde_json;
 
-use std::{env, io };
 use actix_files as fs;
+use std::{env, io};
 // use actix_session::{CookieSession, Session};
-use actix_web::http::{ Method, StatusCode};
-use actix_web::{ guard, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Result };
+use actix_web::http::{Method, StatusCode};
+use actix_web::{
+    guard, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Result,
+};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 // use bytes::Bytes;
 // use futures::unsync::mpsc;
-use futures::{future::ok, Future };
-
+use futures::{future::ok, Future};
 
 mod api;
 mod model;
 mod router;
 mod schema;
-
-
 
 /// favicon handler
 #[get("/favicon")]
@@ -50,15 +50,15 @@ fn index_async(req: HttpRequest) -> impl Future<Item = HttpResponse, Error = Err
         .body(format!("Hello {}!", req.match_info().get("name").unwrap())))
 }
 
-
 fn main() -> io::Result<()> {
     env::set_var("RUST_LOG", "actix_web=debug");
     env_logger::init();
 
     let sys = actix_rt::System::new("basic-example");
 
-     // Start 3 db executor actors
-    let manager = ConnectionManager::<PgConnection>::new("postgres://dragan1810:123@localhost/lolspot");
+    // Start 3 db executor actors
+    let manager =
+        ConnectionManager::<PgConnection>::new("postgres://dragan1810:123@localhost/lolspot");
     let pool = r2d2::Pool::builder()
         .build(manager)
         .expect("Failed to create pool.");
@@ -70,9 +70,7 @@ fn main() -> io::Result<()> {
             .service(favicon)
             .service(welcome)
             .configure(router::lots)
-            .service(
-                web::resource("/async/{name}").route(web::get().to_async(index_async)),
-            )
+            .service(web::resource("/async/{name}").route(web::get().to_async(index_async)))
             .service(
                 web::resource("/test").to(|req: HttpRequest| match *req.method() {
                     Method::GET => HttpResponse::Ok(),
@@ -83,11 +81,12 @@ fn main() -> io::Result<()> {
             // static files
             .service(fs::Files::new("/static", "static").show_files_listing())
             // default
-            .default_service( web::resource("").route(web::get().to(p404)).route(
-                        web::route()
-                            .guard(guard::Not(guard::Get()))
-                            .to(|| HttpResponse::MethodNotAllowed()),
-                    ),
+            .default_service(
+                web::resource("").route(web::get().to(p404)).route(
+                    web::route()
+                        .guard(guard::Not(guard::Get()))
+                        .to(|| HttpResponse::MethodNotAllowed()),
+                ),
             )
     })
     .bind("127.0.0.1:8080")?
