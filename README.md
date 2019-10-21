@@ -1,4 +1,4 @@
-# Hello-Rust
-Trying Rust
+# Backend
 
-Sve drzati na ovom repo-u...
+* Actix-web
+* pSQL
