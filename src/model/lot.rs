@@ -1,18 +1,18 @@
 use crate::schema::lots;
-use uuid::Uuid;
+use uuid;
 
-#[derive(Clone,Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
 #[table_name = "lots"]
 pub struct Lot {
-    pub id: Uuid,
+    pub id: uuid::Uuid,
     pub name: String,
     pub description: Option<String>,
-    pub price: i32
+    pub price: i32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct NewLot {
     pub name: String,
     pub description: String,
-    pub price: i32
+    pub price: i32,
 }

@@ -1,24 +1,27 @@
 [package]
-name = "hello-rust"
+name = "e-tron-api"
 version = "0.1.0"
 authors = ["dragan1810 <d.novakovic1810@yahoo.com>"]
 edition = "2018"
 
 # scripts
 
-# start: systemfd --no-pid -s http::3000 -- cargo watch -x run
+# cargo watch -x run
 
 [dependencies]
-actix-web = "1.0.0-beta.4"
-actix-files = "0.1.0" # nije na crates jos uvek :(
-env_logger = "0.6.1"
+actix-web = "1.0.8"
+actix-identity = "0.1.0"
+actix-files = "0.1.6"
+lazy_static = "1.4.0"
+env_logger = "0.7.1"
 futures = "0.1.26"
-bytes = "0.4"
-actix-rt = "0.2.0"
-serde = "1.0.91"
-serde_derive = "^1.0.91"
-serde_json = "1.0.39"
-diesel = { version = "1.4.2", features = ["postgres", "r2d2", "uuid"] }
-dotenv = "0.14.1"
-dotenv_codegen = "0.14.1"
-uuid = { version = "0.6.5", features = ["serde", "v4"] }
+bytes = "0.4.12"
+actix-rt = "0.2.5"
+chrono = { version = "0.4", features = ["serde"] }
+serde = "1.0.101"
+serde_derive = "^1.0.101"
+serde_json = "1.0.41"
+diesel = { version = "1.4.3", features = ["postgres", "r2d2", "uuid", "chrono"] }
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
+uuid = { version = "0.6", features = ["serde", "v4"] }

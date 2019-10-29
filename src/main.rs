@@ -11,6 +11,7 @@ extern crate serde_json;
 use actix_files as fs;
 use std::{env, io};
 // use actix_session::{CookieSession, Session};
+use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::http::{Method, StatusCode};
 use actix_web::{
     guard, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Result,
@@ -63,10 +64,20 @@ fn main() -> io::Result<()> {
         .build(manager)
         .expect("Failed to create pool.");
 
+    let domain: String = std::env::var("DOMAIN").unwrap_or_else(|_| "localhost".to_string());
+
     HttpServer::new(move || {
         App::new()
             .data(pool.clone())
             .wrap(middleware::Logger::default())
+            // .wrap(IdentityService::new(
+            //     CookieIdentityPolicy::new(utils::SECRET_KEY.as_bytes())
+            //         .name("auth")
+            //         .path("/")
+            //         .domain(domain.as_str())
+            //         .max_age_time(chrono::Duration::days(1))
+            //         .secure(false),
+            // ))
             .service(favicon)
             .service(welcome)
             .configure(router::lots)
