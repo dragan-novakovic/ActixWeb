@@ -1,4 +1,12 @@
 table! {
+    invitations (id) {
+        id -> Uuid,
+        email -> Varchar,
+        expires_at -> Timestamp,
+    }
+}
+
+table! {
     lots (id) {
         id -> Uuid,
         name -> Varchar,
@@ -18,6 +26,7 @@ table! {
 }
 
 allow_tables_to_appear_in_same_query!(
+    invitations,
     lots,
     users,
 );

@@ -18,8 +18,6 @@ use actix_web::{
 };
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
-// use bytes::Bytes;
-// use futures::unsync::mpsc;
 use futures::{future::ok, Future};
 
 mod api;
@@ -76,7 +74,7 @@ fn main() -> io::Result<()> {
             //         .path("/")
             //         .domain(domain.as_str())
             //         .max_age_time(chrono::Duration::days(1))
-            //         .secure(false),
+            //         .secure(false), // set true if https
             // ))
             .service(favicon)
             .service(welcome)
@@ -106,30 +104,3 @@ fn main() -> io::Result<()> {
     println!("Starting http server: 127.0.0.1:8080");
     sys.run()
 }
-
-/*
-
-/// async body
-fn index_async_body(path: web::Path<String>) -> HttpResponse {
-    let text = format!("Hello {}!", *path);
-
-    let (tx, rx_body) = mpsc::unbounded();
-    let _ = tx.unbounded_send(Bytes::from(text.as_bytes()));
-
-    HttpResponse::Ok()
-        .streaming(rx_body.map_err(|_| error::ErrorBadRequest("bad request")))
-}
-
-/// handler with path parameters like `/user/{name}/`
-fn with_param(req: HttpRequest, path: web::Path<(String,)>) -> HttpResponse {
-    println!("{:?}", req);
-
-    HttpResponse::Ok()
-        .content_type("text/plain")
-        .body(format!("Hello {}!", path.0))
-}
-
-
-
-
- */

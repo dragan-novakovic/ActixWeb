@@ -544,6 +544,7 @@ dependencies = [
  "actix-web 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytes 0.4.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "derive_more 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "diesel 1.4.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "dotenv 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "dotenv_codegen 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
