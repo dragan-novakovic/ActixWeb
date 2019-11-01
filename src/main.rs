@@ -18,12 +18,12 @@ use actix_web::{
 };
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
-use futures::{future::ok, Future};
 
 mod api;
 mod model;
 mod router;
 mod schema;
+mod share;
 
 /// favicon handler
 #[get("/favicon")]
@@ -40,13 +40,6 @@ fn welcome(req: HttpRequest) -> Result<HttpResponse> {
 
 fn p404() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("static/404.html")?.set_status_code(StatusCode::NOT_FOUND))
-}
-
-/// async handler
-fn index_async(req: HttpRequest) -> impl Future<Item = HttpResponse, Error = Error> {
-    ok(HttpResponse::Ok()
-        .content_type("text/html")
-        .body(format!("Hello {}!", req.match_info().get("name").unwrap())))
 }
 
 fn main() -> io::Result<()> {
@@ -79,14 +72,7 @@ fn main() -> io::Result<()> {
             .service(favicon)
             .service(welcome)
             .configure(router::lots)
-            .service(web::resource("/async/{name}").route(web::get().to_async(index_async)))
-            .service(
-                web::resource("/test").to(|req: HttpRequest| match *req.method() {
-                    Method::GET => HttpResponse::Ok(),
-                    Method::POST => HttpResponse::MethodNotAllowed(),
-                    _ => HttpResponse::NotFound(),
-                }),
-            )
+            .configure(router::users)
             // static files
             .service(fs::Files::new("/static", "static").show_files_listing())
             // default
