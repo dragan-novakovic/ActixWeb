@@ -1,5 +1,6 @@
 use actix_web::{web, HttpResponse};
 
+use crate::api::login::login_user;
 use crate::api::lots::{create_lot, lot};
 use crate::api::register::create_user;
 
@@ -18,6 +19,15 @@ pub fn users(cfg: &mut web::ServiceConfig) {
         web::resource("/user")
             .data(web::JsonConfig::default().limit(4096))
             .route(web::post().to_async(create_user))
+            .route(web::head().to(|| HttpResponse::MethodNotAllowed())),
+    );
+}
+
+pub fn login(cfg: &mut web::ServiceConfig) {
+    cfg.service(
+        web::resource("/login")
+            .data(web::JsonConfig::default().limit(4096))
+            .route(web::post().to_async(login_user))
             .route(web::head().to(|| HttpResponse::MethodNotAllowed())),
     );
 }

@@ -11,11 +11,9 @@ extern crate serde_json;
 use actix_files as fs;
 use std::{env, io};
 // use actix_session::{CookieSession, Session};
-use actix_identity::{CookieIdentityPolicy, IdentityService};
-use actix_web::http::{Method, StatusCode};
-use actix_web::{
-    guard, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Result,
-};
+//use actix_identity::{CookieIdentityPolicy, IdentityService};
+use actix_web::http::StatusCode;
+use actix_web::{guard, middleware, web, App, HttpRequest, HttpResponse, HttpServer, Result};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 
@@ -32,7 +30,7 @@ fn favicon() -> Result<fs::NamedFile> {
 }
 
 #[get("/")]
-fn welcome(req: HttpRequest) -> Result<HttpResponse> {
+fn welcome(_req: HttpRequest) -> Result<HttpResponse> {
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type("text/html; charset=utf-8")
         .body(include_str!("../static/welcome.html")))
@@ -55,7 +53,7 @@ fn main() -> io::Result<()> {
         .build(manager)
         .expect("Failed to create pool.");
 
-    let domain: String = std::env::var("DOMAIN").unwrap_or_else(|_| "localhost".to_string());
+    //let domain: String = std::env::var("DOMAIN").unwrap_or_else(|_| "localhost".to_string());
 
     HttpServer::new(move || {
         App::new()
@@ -81,6 +79,7 @@ fn main() -> io::Result<()> {
             .service(welcome)
             .configure(router::lots)
             .configure(router::users)
+            .configure(router::login)
             // static files
             .service(fs::Files::new("/static", "static").show_files_listing())
             // default

@@ -19,8 +19,8 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
 
     diesel::insert_into(users).values(&new_user).execute(conn)?;
 
-    let mut lots_list = users.load::<User>(conn)?;
-    Ok(lots_list.pop().unwrap())
+    let mut users_list = users.load::<User>(conn)?;
+    Ok(users_list.pop().unwrap())
 }
 
 pub fn create_user(
