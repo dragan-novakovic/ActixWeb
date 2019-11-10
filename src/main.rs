@@ -23,7 +23,7 @@ mod router;
 mod schema;
 mod share;
 
-/// favicon handler
+// ============================
 #[get("/favicon")]
 fn favicon() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("static/favicon.ico")?)
@@ -39,6 +39,8 @@ fn welcome(_req: HttpRequest) -> Result<HttpResponse> {
 fn p404() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("static/404.html")?.set_status_code(StatusCode::NOT_FOUND))
 }
+
+// ========================
 
 fn main() -> io::Result<()> {
     env::set_var("RUST_LOG", "actix_web=debug");
@@ -77,8 +79,8 @@ fn main() -> io::Result<()> {
             // ))
             .service(favicon)
             .service(welcome)
-            .configure(router::lots)
             .configure(router::users)
+            .configure(router::user)
             .configure(router::login)
             // static files
             .service(fs::Files::new("/static", "static").show_files_listing())

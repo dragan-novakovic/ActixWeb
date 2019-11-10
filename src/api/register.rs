@@ -32,3 +32,27 @@ pub fn create_user(
         Err(_) => Ok(HttpResponse::InternalServerError().into()),
     })
 }
+
+fn query_delete(
+    user_id: uuid::Uuid,
+    pool: web::Data<Pool>,
+) -> Result<String, diesel::result::Error> {
+    use crate::schema::users::dsl::*;
+    let conn: &PgConnection = &pool.get().unwrap();
+
+    diesel::delete(users.filter(id.eq(user_id)))
+        .execute(conn)
+        .expect("Error deleting User");
+
+    Ok("Succes".to_owned())
+}
+
+pub fn delete_user(
+    id: web::Path<(uuid::Uuid)>,
+    pool: web::Data<Pool>,
+) -> impl Future<Item = HttpResponse, Error = Error> {
+    web::block(move || query_delete(id.into_inner(), pool)).then(|res| match res {
+        Ok(user) => Ok(HttpResponse::Ok().json(user)),
+        Err(_) => Ok(HttpResponse::InternalServerError().into()),
+    })
+}
