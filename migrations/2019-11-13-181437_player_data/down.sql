@@ -1,3 +1,3 @@
 -- This file should undo anything in `up.sql`
 
-DROP TABLE lots;
+DROP TABLE players_data;

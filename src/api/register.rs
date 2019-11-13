@@ -2,10 +2,11 @@ use actix_web::{web, Error, HttpResponse};
 use diesel::prelude::*;
 use futures::Future;
 
-use crate::model::user::{NewUser, User};
+use crate::model::user::{NewUser, PlayerData, User};
 use crate::share::db::Pool;
 
 fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::result::Error> {
+    use crate::schema::players_data::dsl::*;
     use crate::schema::users::dsl::*;
     let conn: &PgConnection = &pool.get().unwrap();
 
@@ -17,7 +18,17 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         created_on: chrono::Local::now().naive_local(),
     };
 
+    let new_player_data = PlayerData {
+        energy: 100,
+        gold: 50,
+        exp: 0,
+        user_id: new_user.id,
+    };
+
     diesel::insert_into(users).values(&new_user).execute(conn)?;
+    diesel::insert_into(players_data)
+        .values(&new_player_data)
+        .execute(conn)?;
 
     let mut users_list = users.load::<User>(conn)?;
     Ok(users_list.pop().unwrap())

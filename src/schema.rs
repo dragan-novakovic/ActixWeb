@@ -16,6 +16,15 @@ table! {
 }
 
 table! {
+    players_data (user_id) {
+        energy -> Int4,
+        gold -> Int4,
+        exp -> Int4,
+        user_id -> Uuid,
+    }
+}
+
+table! {
     users (id) {
         id -> Uuid,
         email -> Varchar,
@@ -25,8 +34,11 @@ table! {
     }
 }
 
+joinable!(players_data -> users (user_id));
+
 allow_tables_to_appear_in_same_query!(
     invitations,
     lots,
+    players_data,
     users,
 );
