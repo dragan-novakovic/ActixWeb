@@ -1,4 +1,4 @@
-use crate::schema::{players_data, users};
+use crate::schema::users;
 use chrono::prelude::*;
 use uuid;
 
@@ -38,13 +38,4 @@ pub struct NewUser {
     pub username: String,
     pub email: String,
     pub password: String,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
-#[table_name = "players_data"]
-pub struct PlayerData {
-    pub energy: i32,
-    pub gold: i32,
-    pub exp: i32,
-    pub user_id: uuid::Uuid,
 }

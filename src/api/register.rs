@@ -2,7 +2,10 @@ use actix_web::{web, Error, HttpResponse};
 use diesel::prelude::*;
 use futures::Future;
 
-use crate::model::user::{NewUser, PlayerData, User};
+use crate::model::{
+    player::PlayerData,
+    user::{NewUser, User},
+};
 use crate::share::db::Pool;
 
 fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::result::Error> {
