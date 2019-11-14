@@ -3,7 +3,11 @@ extern crate actix_web;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
+extern crate juniper;
+#[macro_use]
 extern crate diesel;
+#[macro_use]
+extern crate dotenv_codegen;
 
 extern crate serde;
 extern crate serde_json;
@@ -46,14 +50,15 @@ fn main() -> io::Result<()> {
     env::set_var("RUST_LOG", "actix_web=debug");
     env_logger::init();
 
-    let sys = actix_rt::System::new("basic-example");
+    let sys = actix_rt::System::new("e-tron");
 
     // Start 3 db executor actors
-    let manager =
-        ConnectionManager::<PgConnection>::new("postgres://dragan1810:123@localhost/lolspot");
+    let manager = ConnectionManager::<PgConnection>::new(dotenv!("DATABASE_URL"));
     let pool = r2d2::Pool::builder()
         .build(manager)
         .expect("Failed to create pool.");
+
+    // let schema = std::sync::Arc::new(create_schema());
 
     //let domain: String = std::env::var("DOMAIN").unwrap_or_else(|_| "localhost".to_string());
 
