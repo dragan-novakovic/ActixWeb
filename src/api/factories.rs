@@ -1,69 +1,84 @@
 use actix_web::{web, Error, HttpResponse};
 use diesel::prelude::*;
 use futures::Future;
+use uuid;
 
-use crate::model::factory::Factory;
+use crate::model::{factory::Factory, player::PlayerFactories};
 use crate::share::db::Pool;
 
-// fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::result::Error> {
-//     use crate::schema::players_data::dsl::*;
-//     use crate::schema::users::dsl::*;
-//     let conn: &PgConnection = &pool.get().unwrap();
+fn query_get_factories(pool: web::Data<Pool>) -> Result<Vec<Factory>, diesel::result::Error> {
+    use crate::schema::factories::dsl::*;
+    let conn: &PgConnection = &pool.get().unwrap();
 
-//     let new_user = User {
-//         id: uuid::Uuid::new_v4(),
-//         email: new_user_data.email,
-//         username: new_user_data.username,
-//         password: new_user_data.password,
-//         created_on: chrono::Local::now().naive_local(),
-//     };
+    let items = factories.load::<Factory>(conn).unwrap();
+    Ok(items)
+}
 
-//     let new_player_data = PlayerData {
-//         energy: 100,
-//         gold: 50,
-//         exp: 0,
-//         user_id: new_user.id,
-//     };
+pub fn get_factories(pool: web::Data<Pool>) -> impl Future<Item = HttpResponse, Error = Error> {
+    web::block(move || query_get_factories(pool)).then(|res| match res {
+        Ok(user) => Ok(HttpResponse::Ok().json(user)),
+        Err(_) => Ok(HttpResponse::InternalServerError().into()),
+    })
+}
 
-//     diesel::insert_into(users).values(&new_user).execute(conn)?;
-//     diesel::insert_into(players_data)
-//         .values(&new_player_data)
-//         .execute(conn)?;
+fn query_get_player_factories(
+    user: web::Json<UserId>,
+    pool: web::Data<Pool>,
+) -> Result<Vec<PlayerFactories>, diesel::result::Error> {
+    use crate::schema::player_factories::dsl::*;
+    let conn: &PgConnection = &pool.get().unwrap();
 
-//     let mut users_list = users.load::<User>(conn)?;
-//     Ok(users_list.pop().unwrap())
-// }
+    let items = player_factories
+        .filter(user_id.eq(&user.id))
+        .load::<PlayerFactories>(conn)?;
 
-// pub fn create_user(
-//     user: web::Json<NewUser>,
-//     pool: web::Data<Pool>,
-// ) -> impl Future<Item = HttpResponse, Error = Error> {
-//     web::block(move || query(user.into_inner(), pool)).then(|res| match res {
-//         Ok(user) => Ok(HttpResponse::Ok().json(user)),
-//         Err(_) => Ok(HttpResponse::InternalServerError().into()),
-//     })
-// }
+    Ok(items)
+}
 
-// fn query_delete(
-//     user_id: uuid::Uuid,
-//     pool: web::Data<Pool>,
-// ) -> Result<String, diesel::result::Error> {
-//     use crate::schema::users::dsl::*;
-//     let conn: &PgConnection = &pool.get().unwrap();
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct UserId {
+    pub id: uuid::Uuid,
+}
 
-//     diesel::delete(users.filter(id.eq(user_id)))
-//         .execute(conn)
-//         .expect("Error deleting User");
+pub fn get_player_factories(
+    user: web::Json<UserId>,
+    pool: web::Data<Pool>,
+) -> impl Future<Item = HttpResponse, Error = Error> {
+    web::block(move || query_get_player_factories(user, pool)).then(|res| match res {
+        Ok(user) => Ok(HttpResponse::Ok().json(user)),
+        Err(_) => Ok(HttpResponse::InternalServerError().into()),
+    })
+}
 
-//     Ok("Succes".to_owned())
-// }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PlayerPayload {
+    pub user_id: uuid::Uuid,
+    pub factory_id: uuid::Uuid,
+}
 
-// pub fn delete_user(
-//     id: web::Path<(uuid::Uuid)>,
-//     pool: web::Data<Pool>,
-// ) -> impl Future<Item = HttpResponse, Error = Error> {
-//     web::block(move || query_delete(id.into_inner(), pool)).then(|res| match res {
-//         Ok(user) => Ok(HttpResponse::Ok().json(user)),
-//         Err(_) => Ok(HttpResponse::InternalServerError().into()),
-//     })
-// }
+#[allow(dead_code)]
+fn query_add_player_factories(
+    payload: web::Json<PlayerPayload>,
+    pool: web::Data<Pool>,
+) -> Result<Vec<PlayerFactories>, diesel::result::Error> {
+    use crate::schema::player_factories::dsl::*;
+    let conn: &PgConnection = &pool.get().unwrap();
+
+    let items = player_factories
+        .filter(user_id.eq(&payload.user_id))
+        .filter(factory_id.eq(&payload.factory_id))
+        .load::<PlayerFactories>(conn)?;
+
+    Ok(items)
+}
+
+#[allow(dead_code)]
+pub fn add_player_factories(
+    player_data: web::Json<PlayerPayload>,
+    pool: web::Data<Pool>,
+) -> impl Future<Item = HttpResponse, Error = Error> {
+    web::block(move || query_add_player_factories(player_data, pool)).then(|res| match res {
+        Ok(user) => Ok(HttpResponse::Ok().json(user)),
+        Err(_) => Ok(HttpResponse::InternalServerError().into()),
+    })
+}

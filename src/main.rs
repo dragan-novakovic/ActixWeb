@@ -2,6 +2,7 @@
 extern crate actix_web;
 #[macro_use]
 extern crate serde_derive;
+#[allow(dead_code)]
 #[macro_use]
 extern crate juniper;
 #[macro_use]
@@ -87,6 +88,7 @@ fn main() -> io::Result<()> {
             .configure(router::users)
             .configure(router::user)
             .configure(router::login)
+            .configure(router::factories)
             // static files
             .service(fs::Files::new("/static", "static").show_files_listing())
             // default
