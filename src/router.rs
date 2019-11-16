@@ -1,6 +1,6 @@
 use actix_web::{web, HttpResponse};
 
-use crate::api::factories::{get_factories, get_player_factories};
+use crate::api::factories::{add_player_factories, get_factories, get_player_factories};
 use crate::api::login::{get_user, login_user};
 use crate::api::register::{create_user, delete_user};
 
@@ -38,4 +38,8 @@ pub fn factories(cfg: &mut web::ServiceConfig) {
             .route(web::get().to_async(get_factories))
             .route(web::post().to_async(get_player_factories)),
     );
+}
+
+pub fn buy_factories(cfg: &mut web::ServiceConfig) {
+    cfg.service(web::resource("/buyFactories").route(web::post().to_async(add_player_factories)));
 }

@@ -1,0 +1,7 @@
+{
+  "factories": [
+    { "name": "Basic 1", "level": 1, "gold_per_day": 50, "price": 100 },
+    { "name": "Medium 1", "level": 1, "gold_per_day": 150, "price": 250 },
+    { "name": "Big 1", "level": 1, "gold_per_day": 500, "price": 800 }
+  ]
+}

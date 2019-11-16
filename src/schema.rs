@@ -4,6 +4,7 @@ table! {
         level -> Int4,
         gold_per_day -> Int4,
         price -> Int4,
+        name -> Varchar,
     }
 }
 

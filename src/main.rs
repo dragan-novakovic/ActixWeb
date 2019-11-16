@@ -89,6 +89,7 @@ fn main() -> io::Result<()> {
             .configure(router::user)
             .configure(router::login)
             .configure(router::factories)
+            .configure(router::buy_factories)
             // static files
             .service(fs::Files::new("/static", "static").show_files_listing())
             // default

@@ -56,23 +56,49 @@ pub struct PlayerPayload {
     pub factory_id: uuid::Uuid,
 }
 
-#[allow(dead_code)]
 fn query_add_player_factories(
     payload: web::Json<PlayerPayload>,
     pool: web::Data<Pool>,
-) -> Result<Vec<PlayerFactories>, diesel::result::Error> {
+) -> Result<PlayerFactories, diesel::result::Error> {
     use crate::schema::player_factories::dsl::*;
     let conn: &PgConnection = &pool.get().unwrap();
 
-    let items = player_factories
+    let item = player_factories
         .filter(user_id.eq(&payload.user_id))
         .filter(factory_id.eq(&payload.factory_id))
-        .load::<PlayerFactories>(conn)?;
+        .get_result::<PlayerFactories>(conn)
+        .optional()?;
 
-    Ok(items)
+    dbg!(&item);
+
+    match item {
+        Some(data) => {
+            let new_amount = data.amount + 1;
+
+            let updated = diesel::update(player_factories)
+                .filter(user_id.eq(&payload.user_id))
+                .filter(factory_id.eq(&payload.factory_id))
+                .set(amount.eq(new_amount))
+                .get_result(conn)?;
+
+            Ok(updated)
+        }
+        None => {
+            let new_factories = PlayerFactories {
+                user_id: payload.user_id,
+                factory_id: payload.factory_id,
+                amount: 1,
+            };
+
+            diesel::insert_into(player_factories)
+                .values(&new_factories)
+                .execute(conn)?;
+
+            Ok(new_factories)
+        }
+    }
 }
 
-#[allow(dead_code)]
 pub fn add_player_factories(
     player_data: web::Json<PlayerPayload>,
     pool: web::Data<Pool>,
