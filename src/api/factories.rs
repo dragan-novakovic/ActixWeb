@@ -69,8 +69,6 @@ fn query_add_player_factories(
         .get_result::<PlayerFactories>(conn)
         .optional()?;
 
-    dbg!(&item);
-
     match item {
         Some(data) => {
             let new_amount = data.amount + 1;
