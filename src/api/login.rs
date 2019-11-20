@@ -2,6 +2,7 @@ use actix_web::{web, Error, HttpResponse};
 use diesel::prelude::*;
 use futures::Future;
 
+use crate::model::player::PlayerData;
 use crate::model::user::User;
 use crate::share::db::Pool;
 
@@ -16,21 +17,44 @@ struct UserWithData {
     pub email: String,
     pub username: String,
     pub password: String,
-    pub energy: i32,
-    pub gold: i32,
-    pub exp: i32,
+    pub player_data: PlayerData,
 }
 
-impl From<(uuid::Uuid, String, String, String, i32, i32, i32)> for UserWithData {
-    fn from(tup: (uuid::Uuid, String, String, String, i32, i32, i32)) -> UserWithData {
+impl
+    From<(
+        uuid::Uuid,
+        String,
+        String,
+        String,
+        uuid::Uuid,
+        i32,
+        i32,
+        i32,
+    )> for UserWithData
+{
+    fn from(
+        tup: (
+            uuid::Uuid,
+            String,
+            String,
+            String,
+            uuid::Uuid,
+            i32,
+            i32,
+            i32,
+        ),
+    ) -> UserWithData {
         UserWithData {
             id: tup.0,
             email: tup.1,
             username: tup.2,
             password: tup.3,
-            energy: tup.4,
-            gold: tup.5,
-            exp: tup.6,
+            player_data: PlayerData {
+                id: tup.4,
+                energy: tup.5,
+                gold: tup.6,
+                exp: tup.7,
+            },
         }
     }
 }
@@ -50,9 +74,27 @@ fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithDat
 
     let item: UserWithData = users
         .inner_join(players_data)
-        .select((id, email, username, password, energy, gold, exp))
+        .select((
+            id,
+            email,
+            username,
+            password,
+            players_data.primary_key(),
+            energy,
+            exp,
+            gold,
+        ))
         .filter(email.eq(&auth_data.email))
-        .get_result::<(uuid::Uuid, String, String, String, i32, i32, i32)>(conn)
+        .get_result::<(
+            uuid::Uuid,
+            String,
+            String,
+            String,
+            uuid::Uuid,
+            i32,
+            i32,
+            i32,
+        )>(conn)
         .unwrap()
         .into();
 
