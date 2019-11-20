@@ -17,19 +17,21 @@ table! {
 }
 
 table! {
-    player_factories (user_id, factory_id) {
-        user_id -> Uuid,
-        factory_id -> Uuid,
+    player_factories (id) {
+        id -> Uuid,
+        user_id -> Nullable<Uuid>,
+        factory_id -> Nullable<Uuid>,
         amount -> Int4,
     }
 }
 
 table! {
-    players_data (user_id) {
+    players_data (id) {
         energy -> Int4,
         gold -> Int4,
         exp -> Int4,
-        user_id -> Uuid,
+        id -> Uuid,
+        factories_id -> Nullable<Uuid>,
     }
 }
 
@@ -40,12 +42,14 @@ table! {
         username -> Varchar,
         password -> Varchar,
         created_on -> Timestamp,
+        player_data_id -> Nullable<Uuid>,
     }
 }
 
 joinable!(player_factories -> factories (factory_id));
 joinable!(player_factories -> users (user_id));
-joinable!(players_data -> users (user_id));
+joinable!(players_data -> player_factories (factories_id));
+joinable!(users -> players_data (player_data_id));
 
 allow_tables_to_appear_in_same_query!(
     factories,
