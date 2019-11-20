@@ -19,8 +19,8 @@ table! {
 table! {
     player_factories (id) {
         id -> Uuid,
-        user_id -> Nullable<Uuid>,
-        factory_id -> Nullable<Uuid>,
+        user_id -> Uuid,
+        factory_id -> Uuid,
         amount -> Int4,
     }
 }
@@ -31,7 +31,7 @@ table! {
         gold -> Int4,
         exp -> Int4,
         id -> Uuid,
-        factories_id -> Nullable<Uuid>,
+        factories_id -> Uuid,
     }
 }
 
@@ -42,7 +42,7 @@ table! {
         username -> Varchar,
         password -> Varchar,
         created_on -> Timestamp,
-        player_data_id -> Nullable<Uuid>,
+        player_data_id -> Uuid,
     }
 }
 

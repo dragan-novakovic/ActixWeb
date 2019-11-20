@@ -17,20 +17,6 @@ impl User {
         self.password = "".to_string();
         self
     }
-
-    pub fn from_details<S: Into<String>, T: Into<String>, V: Into<String>>(
-        email: S,
-        pwd: T,
-        username: V,
-    ) -> Self {
-        User {
-            id: uuid::Uuid::new_v4(),
-            email: email.into(),
-            username: username.into(),
-            password: pwd.into(),
-            created_on: chrono::Local::now().naive_local(),
-        }
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
