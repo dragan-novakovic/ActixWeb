@@ -83,6 +83,7 @@ fn query_add_player_factories(
         }
         None => {
             let new_factories = PlayerFactories {
+                id: uuid::Uuid::new_v4(),
                 user_id: payload.user_id,
                 factory_id: payload.factory_id,
                 amount: 1,

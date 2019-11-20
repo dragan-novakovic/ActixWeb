@@ -10,6 +10,7 @@ pub struct User {
     pub username: String,
     pub password: String,
     pub created_on: NaiveDateTime,
+    pub player_data_id: uuid::Uuid,
 }
 
 impl User {

@@ -19,13 +19,14 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         username: new_user_data.username,
         password: new_user_data.password,
         created_on: chrono::Local::now().naive_local(),
+        player_data_id: uuid::Uuid::new_v4(),
     };
 
     let new_player_data = PlayerData {
+        id: new_user.player_data_id,
         energy: 100,
         gold: 50,
         exp: 0,
-        user_id: new_user.id,
     };
 
     diesel::insert_into(users).values(&new_user).execute(conn)?;

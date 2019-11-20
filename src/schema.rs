@@ -31,7 +31,6 @@ table! {
         gold -> Int4,
         exp -> Int4,
         id -> Uuid,
-        factories_id -> Uuid,
     }
 }
 
@@ -48,7 +47,6 @@ table! {
 
 joinable!(player_factories -> factories (factory_id));
 joinable!(player_factories -> users (user_id));
-joinable!(players_data -> player_factories (factories_id));
 joinable!(users -> players_data (player_data_id));
 
 allow_tables_to_appear_in_same_query!(
