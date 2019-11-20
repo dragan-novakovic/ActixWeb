@@ -1,0 +1,19 @@
+{
+  "users": [
+    {
+      "email": "dragan.qwerty@gmail.com",
+      "username": "Tester1",
+      "password": "123456"
+    },
+    {
+      "email": "dragan2.qwerty@gmail.com",
+      "username": "Tester2",
+      "password": "123456"
+    },
+    {
+      "email": "dragan3.qwerty@gmail.com",
+      "username": "Tester3",
+      "password": "123456"
+    }
+  ]
+}

@@ -9,9 +9,16 @@ use crate::model::{
 use crate::share::db::Pool;
 
 fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::result::Error> {
-    use crate::schema::players_data::dsl::*;
-    use crate::schema::users::dsl::*;
+    use crate::schema::players_data::dsl::players_data;
+    use crate::schema::users::dsl::{id, users};
     let conn: &PgConnection = &pool.get().unwrap();
+
+    let new_player_data = PlayerData {
+        id: uuid::Uuid::new_v4(),
+        energy: 100,
+        gold: 50,
+        exp: 0,
+    };
 
     let new_user = User {
         id: uuid::Uuid::new_v4(),
@@ -19,23 +26,20 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         username: new_user_data.username,
         password: new_user_data.password,
         created_on: chrono::Local::now().naive_local(),
-        player_data_id: uuid::Uuid::new_v4(),
+        player_data_id: new_player_data.id,
     };
 
-    let new_player_data = PlayerData {
-        id: new_user.player_data_id,
-        energy: 100,
-        gold: 50,
-        exp: 0,
-    };
-
-    diesel::insert_into(users).values(&new_user).execute(conn)?;
     diesel::insert_into(players_data)
         .values(&new_player_data)
-        .execute(conn)?;
+        .execute(conn)
+        .unwrap();
+    diesel::insert_into(users)
+        .values(&new_user)
+        .execute(conn)
+        .unwrap();
 
-    let mut users_list = users.load::<User>(conn)?;
-    Ok(users_list.pop().unwrap())
+    let created_user = users.filter(id.eq(&new_user.id)).get_result(conn).unwrap();
+    Ok(created_user)
 }
 
 pub fn create_user(
