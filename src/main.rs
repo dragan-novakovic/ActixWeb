@@ -14,7 +14,7 @@ extern crate serde;
 extern crate serde_json;
 
 use actix_files as fs;
-use std::{env, io, time::Duration};
+use std::{env, io};
 // use actix_session::{CookieSession, Session};
 //use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::http::StatusCode;
