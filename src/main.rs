@@ -14,7 +14,7 @@ extern crate serde;
 extern crate serde_json;
 
 use actix_files as fs;
-use std::{env, io};
+use std::{env, io, time::Duration};
 // use actix_session::{CookieSession, Session};
 //use actix_identity::{CookieIdentityPolicy, IdentityService};
 use actix_web::http::StatusCode;
@@ -90,6 +90,8 @@ fn main() -> io::Result<()> {
             .configure(router::login)
             .configure(router::factories)
             .configure(router::buy_factories)
+            // webSockets
+            .service(web::resource("/ws/").route(web::get().to(share::web_sockets::ws_index)))
             // static files
             .service(fs::Files::new("/static", "static").show_files_listing())
             // default
