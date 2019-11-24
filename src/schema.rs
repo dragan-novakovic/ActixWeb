@@ -31,6 +31,8 @@ table! {
         gold -> Int4,
         exp -> Int4,
         id -> Uuid,
+        last_updated -> Timestamp,
+        gold_acc -> Int4,
     }
 }
 

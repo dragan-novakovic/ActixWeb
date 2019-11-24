@@ -60,7 +60,9 @@ fn query_add_player_factories(
     payload: web::Json<PlayerPayload>,
     pool: web::Data<Pool>,
 ) -> Result<PlayerFactories, diesel::result::Error> {
-    use crate::schema::player_factories::dsl::*;
+    use crate::schema::factories::dsl::{factories, gold_per_day, id};
+    use crate::schema::player_factories::dsl::{amount, factory_id, player_factories, user_id};
+    use crate::schema::players_data::dsl::{gold_acc, players_data};
     let conn: &PgConnection = &pool.get().unwrap();
 
     let item = player_factories
@@ -69,7 +71,7 @@ fn query_add_player_factories(
         .get_result::<PlayerFactories>(conn)
         .optional()?;
 
-    match item {
+    let new_factories = match item {
         Some(data) => {
             let new_amount = data.amount + 1;
 
@@ -95,7 +97,20 @@ fn query_add_player_factories(
 
             Ok(new_factories)
         }
-    }
+    };
+
+    let gold = factories
+        .filter(id.eq(&payload.factory_id))
+        .select(gold_per_day)
+        .first::<i32>(conn)
+        .unwrap();
+
+    diesel::update(players_data)
+        .set(gold_acc.eq(gold_acc + gold))
+        .execute(conn)
+        .unwrap();
+
+    new_factories
 }
 
 pub fn add_player_factories(

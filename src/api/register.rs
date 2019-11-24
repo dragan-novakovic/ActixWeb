@@ -17,7 +17,9 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         id: uuid::Uuid::new_v4(),
         energy: 100,
         gold: 50,
+        gold_acc: 0,
         exp: 0,
+        last_updated: chrono::Utc::now().naive_utc(),
     };
 
     let new_user = User {
@@ -25,7 +27,7 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         email: new_user_data.email,
         username: new_user_data.username,
         password: new_user_data.password,
-        created_on: chrono::Local::now().naive_local(),
+        created_on: chrono::Utc::now().naive_utc(),
         player_data_id: new_player_data.id,
     };
 

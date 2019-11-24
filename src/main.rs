@@ -85,6 +85,7 @@ fn main() -> io::Result<()> {
             // ))
             .service(favicon)
             .service(welcome)
+            .configure(router::get_time)
             .configure(router::users)
             .configure(router::user)
             .configure(router::login)

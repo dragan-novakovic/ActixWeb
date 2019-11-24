@@ -1,10 +1,15 @@
 use actix_web::{web, Error, HttpResponse};
+use chrono;
+use chrono::prelude::*;
 use diesel::prelude::*;
 use futures::Future;
 
+use crate::api::time::get_current_time_diff;
 use crate::model::player::PlayerData;
 use crate::model::user::User;
 use crate::share::db::Pool;
+
+/// CHECK FOR DATETIME IF NOT NOW UPDATE !!!
 
 #[derive(Debug, Deserialize)]
 pub struct AuthData {
@@ -30,6 +35,8 @@ impl
         i32,
         i32,
         i32,
+        NaiveDateTime,
+        i32,
     )> for UserWithData
 {
     fn from(
@@ -41,6 +48,8 @@ impl
             uuid::Uuid,
             i32,
             i32,
+            i32,
+            NaiveDateTime,
             i32,
         ),
     ) -> UserWithData {
@@ -54,6 +63,8 @@ impl
                 energy: tup.5,
                 gold: tup.6,
                 exp: tup.7,
+                last_updated: tup.8,
+                gold_acc: tup.9,
             },
         }
     }
@@ -64,11 +75,24 @@ impl UserWithData {
         self.password = "".to_owned();
         self
     }
+
+    fn update_gold(mut self) -> Self {
+        self.player_data.gold = self.player_data.gold
+            + get_current_time_diff(self.player_data.last_updated) * self.player_data.gold_acc;
+        self
+    }
+
+    fn new_gold(&self) -> i32 {
+        self.player_data.gold
+            + get_current_time_diff(self.player_data.last_updated) * self.player_data.gold_acc
+    }
 }
 
 // /// Diesel query
 fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithData, ()> {
-    use crate::schema::players_data::dsl::{energy, exp, gold, players_data};
+    use crate::schema::players_data::dsl::{
+        energy, exp, gold, gold_acc, last_updated, players_data,
+    };
     use crate::schema::users::dsl::{email, id, password, username, users};
     let conn: &PgConnection = &pool.get().unwrap();
 
@@ -83,6 +107,8 @@ fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithDat
             energy,
             exp,
             gold,
+            last_updated,
+            gold_acc,
         ))
         .filter(email.eq(&auth_data.email))
         .get_result::<(
@@ -94,12 +120,22 @@ fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithDat
             i32,
             i32,
             i32,
+            NaiveDateTime,
+            i32,
         )>(conn)
         .unwrap()
         .into();
 
+    diesel::update(players_data)
+        .set((
+            gold.eq(item.new_gold()),
+            last_updated.eq(chrono::Utc::now().naive_utc()),
+        ))
+        .execute(conn)
+        .unwrap();
+
     match item.password == auth_data.password {
-        true => Ok(item.remove_pass()),
+        true => Ok(item.update_gold().remove_pass()),
         false => Err(()),
     }
 }

@@ -5,7 +5,6 @@ authors = ["dragan1810 <d.novakovic1810@yahoo.com>"]
 edition = "2018"
 
 # scripts
-
 # cargo watch -x run
 
 [dependencies]
