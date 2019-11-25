@@ -1,6 +1,5 @@
 # To - Do
 
-- implement actix-protobuf
 - implement actix-identity
 - JWT and crsf
 - CORS
@@ -37,3 +36,6 @@
 
 - ["/buyFactories"]  
   POST - Update player_factory
+
+- ["/time"]  
+  GET - Get current server time (UTC)
