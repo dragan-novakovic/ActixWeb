@@ -1,4 +1,4 @@
-level,gold_per_day,price,name
-1,50,100,Basic 1
-1,150,250,Medium 1
-1,500,800,Big 1
+level,gold_per_day,price,name,product,product_amount
+1,50,100,Basic 1,food,10
+1,150,250,Medium 1,weapon,10
+1,500,800,Big 1,food,10

@@ -55,6 +55,8 @@ table! {
         id -> Uuid,
         last_updated -> Timestamp,
         gold_acc -> Int4,
+        player_stats_id -> Nullable<Uuid>,
+        player_inventory_id -> Nullable<Uuid>,
     }
 }
 
@@ -71,8 +73,6 @@ table! {
 
 joinable!(player_factories -> factories (factory_id));
 joinable!(player_factories -> users (user_id));
-joinable!(player_inventory -> players_data (player_data_id));
-joinable!(player_stats -> players_data (player_data_id));
 joinable!(users -> players_data (player_data_id));
 
 allow_tables_to_appear_in_same_query!(
