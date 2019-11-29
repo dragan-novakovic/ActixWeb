@@ -5,6 +5,8 @@ table! {
         gold_per_day -> Int4,
         price -> Int4,
         name -> Varchar,
+        product -> Varchar,
+        product_amount -> Int4,
     }
 }
 
@@ -22,6 +24,26 @@ table! {
         user_id -> Uuid,
         factory_id -> Uuid,
         amount -> Int4,
+    }
+}
+
+table! {
+    player_inventory (id) {
+        id -> Uuid,
+        player_data_id -> Uuid,
+        capacity -> Int4,
+        food_q1 -> Int4,
+        weapon_q1 -> Int4,
+    }
+}
+
+table! {
+    player_stats (id) {
+        id -> Uuid,
+        player_data_id -> Uuid,
+        strength -> Int4,
+        agility -> Int4,
+        stamina -> Int4,
     }
 }
 
@@ -49,12 +71,16 @@ table! {
 
 joinable!(player_factories -> factories (factory_id));
 joinable!(player_factories -> users (user_id));
+joinable!(player_inventory -> players_data (player_data_id));
+joinable!(player_stats -> players_data (player_data_id));
 joinable!(users -> players_data (player_data_id));
 
 allow_tables_to_appear_in_same_query!(
     factories,
     invitations,
     player_factories,
+    player_inventory,
+    player_stats,
     players_data,
     users,
 );
