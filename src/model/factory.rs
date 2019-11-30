@@ -9,4 +9,6 @@ pub struct Factory {
     pub gold_per_day: i32,
     pub price: i32,
     pub name: String,
+    pub product: String,
+    pub product_amount: i32,
 }
