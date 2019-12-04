@@ -96,6 +96,8 @@ fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithDat
     use crate::schema::users::dsl::{email, id, password, username, users};
     let conn: &PgConnection = &pool.get().unwrap();
 
+    // get invetory and stats
+
     let item: UserWithData = users
         .inner_join(players_data)
         .select((

@@ -1,4 +1,4 @@
-use crate::schema::{player_factories, players_data};
+use crate::schema::{player_factories, player_inventory, player_stats, players_data};
 use chrono::prelude::*;
 use uuid;
 
@@ -20,4 +20,24 @@ pub struct PlayerFactories {
     pub user_id: uuid::Uuid,
     pub factory_id: uuid::Uuid,
     pub amount: i32,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
+#[table_name = "player_inventory"]
+pub struct PlayerInvetory {
+    pub id: uuid::Uuid,
+    pub player_data_id: uuid::Uuid,
+    pub food_q1: i32,
+    pub weapon_q1: i32,
+    pub capacity: i32,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
+#[table_name = "player_stats"]
+pub struct PlayerStats {
+    pub id: uuid::Uuid,
+    pub player_data_id: uuid::Uuid,
+    pub strength: i32,
+    pub agility: i32,
+    pub stamina: i32,
 }

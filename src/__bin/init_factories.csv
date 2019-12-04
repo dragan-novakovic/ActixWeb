@@ -1,4 +1,5 @@
 level,gold_per_day,price,name,product,product_amount
-1,50,100,Basic 1,food,10
-1,150,250,Medium 1,weapon,10
-1,500,800,Big 1,food,10
+1,50,100,Food Factory,food,10
+2,100,200,Food Factory,food,20
+1,150,150,Weapon Factory,weapon,10
+2,200,300,Weapon Factory,weapon,20
