@@ -97,6 +97,7 @@ fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithDat
     let conn: &PgConnection = &pool.get().unwrap();
 
     // get invetory and stats
+    // check capacity
 
     let item: UserWithData = users
         .inner_join(players_data)

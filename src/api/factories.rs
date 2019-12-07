@@ -122,3 +122,7 @@ pub fn add_player_factories(
         Err(_) => Ok(HttpResponse::InternalServerError().into()),
     })
 }
+
+// work at specific company => - 10 energy + products
+// upgrade company => - resourses + add new factory remove old
+// cant work if low storage
