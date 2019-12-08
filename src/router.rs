@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 
 use crate::api::factories::{
-    add_player_factories, get_factories, get_player_factories, work_factory,
+    add_player_factories, get_factories, get_player_factories, upgrade_factory, work_factory,
 };
 use crate::api::login::{get_user, login_user};
 use crate::api::register::{create_user, delete_user};
@@ -49,6 +49,10 @@ pub fn buy_factories(cfg: &mut web::ServiceConfig) {
 
 pub fn work_factories(cfg: &mut web::ServiceConfig) {
     cfg.service(web::resource("/workFactories").route(web::post().to(work_factory)));
+}
+
+pub fn upgrade_factories(cfg: &mut web::ServiceConfig) {
+    cfg.service(web::resource("/upgradefactory").route(web::post().to(upgrade_factory)));
 }
 
 pub fn get_time(cfg: &mut web::ServiceConfig) {
