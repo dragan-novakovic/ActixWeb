@@ -1,6 +1,5 @@
 use actix_web::{web, Error, HttpResponse};
 use diesel::prelude::*;
-use futures::Future;
 
 use crate::model::{
     player::PlayerData,
@@ -44,14 +43,15 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
     Ok(created_user)
 }
 
-pub fn create_user(
+pub async fn create_user(
     user: web::Json<NewUser>,
     pool: web::Data<Pool>,
-) -> impl Future<Item = HttpResponse, Error = Error> {
-    web::block(move || query(user.into_inner(), pool)).then(|res| match res {
-        Ok(user) => Ok(HttpResponse::Ok().json(user)),
-        Err(_) => Ok(HttpResponse::InternalServerError().into()),
-    })
+) -> Result<HttpResponse, Error> {
+    Ok(web::block(move || query(user.into_inner(), pool))
+        .await
+        .map(|user| HttpResponse::Ok().json(user))
+        .map_err(|_| HttpResponse::InternalServerError())
+        .unwrap())
 }
 
 fn query_delete(
@@ -68,12 +68,13 @@ fn query_delete(
     Ok("Succes".to_owned())
 }
 
-pub fn delete_user(
+pub async fn delete_user(
     id: web::Path<(uuid::Uuid)>,
     pool: web::Data<Pool>,
-) -> impl Future<Item = HttpResponse, Error = Error> {
-    web::block(move || query_delete(id.into_inner(), pool)).then(|res| match res {
-        Ok(user) => Ok(HttpResponse::Ok().json(user)),
-        Err(_) => Ok(HttpResponse::InternalServerError().into()),
-    })
+) -> Result<HttpResponse, Error> {
+    Ok(web::block(move || query_delete(id.into_inner(), pool))
+        .await
+        .map(|user| HttpResponse::Ok().json(user))
+        .map_err(|_| HttpResponse::InternalServerError())
+        .unwrap())
 }

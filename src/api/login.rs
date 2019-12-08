@@ -2,7 +2,6 @@ use actix_web::{web, Error, HttpResponse};
 use chrono;
 use chrono::prelude::*;
 use diesel::prelude::*;
-use futures::Future;
 
 use crate::api::time::get_current_time_diff;
 use crate::model::player::PlayerData;
@@ -143,7 +142,7 @@ fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithDat
     }
 }
 
-fn query_list(pool: web::Data<Pool>) -> Result<Vec<User>, ()> {
+fn query_list(pool: web::Data<Pool>) -> Result<Vec<User>, diesel::result::Error> {
     use crate::schema::users::dsl::*;
     let conn: &PgConnection = &pool.get().unwrap();
 
@@ -151,19 +150,30 @@ fn query_list(pool: web::Data<Pool>) -> Result<Vec<User>, ()> {
     Ok(items)
 }
 
-pub fn login_user(
+pub async fn login_user(
     user: web::Json<AuthData>,
     pool: web::Data<Pool>,
-) -> impl Future<Item = HttpResponse, Error = Error> {
-    web::block(move || query_login(user.into_inner(), pool)).then(|res| match res {
-        Ok(user) => Ok(HttpResponse::Ok().json(user)),
-        Err(_) => Ok(HttpResponse::InternalServerError().into()),
-    })
+) -> Result<HttpResponse, Error> {
+    Ok(web::block(move || query_login(user.into_inner(), pool))
+        .await
+        .map(|user| HttpResponse::Ok().json(user))
+        .map_err(|_| HttpResponse::InternalServerError())
+        .unwrap())
 }
 
-pub fn get_user(pool: web::Data<Pool>) -> impl Future<Item = HttpResponse, Error = Error> {
-    web::block(move || query_list(pool)).then(|res| match res {
-        Ok(user) => Ok(HttpResponse::Ok().json(user)),
-        Err(_) => Ok(HttpResponse::InternalServerError().into()),
-    })
+pub async fn get_user(pool: web::Data<Pool>) -> Result<HttpResponse, Error> {
+    Ok(web::block(move || query_list(pool))
+        .await
+        .map(|user| HttpResponse::Ok().json(user))
+        .map_err(|_| HttpResponse::InternalServerError())
+        .unwrap())
 }
+
+// pub fn get_player_inventory(
+//     pool: web::Data<Pool>,
+// ) -> impl Future<Item = HttpResponse, Error = Error> {
+//     web::block(move || query_list(pool)).then(|res| match res {
+//         Ok(user) => Ok(HttpResponse::Ok().json(user)),
+//         Err(_) => Ok(HttpResponse::InternalServerError().into()),
+//     })
+// }

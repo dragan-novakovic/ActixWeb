@@ -30,28 +30,27 @@ mod share;
 
 // ============================
 #[get("/favicon")]
-fn favicon() -> Result<fs::NamedFile> {
+async fn favicon() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("static/favicon.ico")?)
 }
 
 #[get("/")]
-fn welcome(_req: HttpRequest) -> Result<HttpResponse> {
+async fn welcome(_req: HttpRequest) -> Result<HttpResponse> {
     Ok(HttpResponse::build(StatusCode::OK)
         .content_type("text/html; charset=utf-8")
         .body(include_str!("../static/welcome.html")))
 }
 
-fn p404() -> Result<fs::NamedFile> {
+async fn p404() -> Result<fs::NamedFile> {
     Ok(fs::NamedFile::open("static/404.html")?.set_status_code(StatusCode::NOT_FOUND))
 }
 
 // ========================
 
-fn main() -> io::Result<()> {
+#[actix_rt::main]
+async fn main() -> io::Result<()> {
     env::set_var("RUST_LOG", "actix_web=debug");
     env_logger::init();
-
-    let sys = actix_rt::System::new("e-tron");
 
     // Start 3 db executor actors
     let manager = ConnectionManager::<PgConnection>::new(dotenv!("DATABASE_URL"));
@@ -91,8 +90,9 @@ fn main() -> io::Result<()> {
             .configure(router::login)
             .configure(router::factories)
             .configure(router::buy_factories)
+            .configure(router::work_factories)
             // webSockets
-            .service(web::resource("/ws/").route(web::get().to(share::web_sockets::ws_index)))
+            // .service(web::resource("/ws/").route(web::get().to(share::web_sockets::ws_index)))
             // static files
             .service(fs::Files::new("/static", "static").show_files_listing())
             // default
@@ -105,8 +105,6 @@ fn main() -> io::Result<()> {
             )
     })
     .bind("127.0.0.1:8080")?
-    .start();
-
-    println!("Starting http server: 127.0.0.1:8080");
-    sys.run()
+    .start()
+    .await
 }
