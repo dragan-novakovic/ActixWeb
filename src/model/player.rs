@@ -4,6 +4,7 @@ use uuid;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
 #[table_name = "players_data"]
+///TEMP NULLS ON INV IDS
 pub struct PlayerData {
     pub id: uuid::Uuid,
     pub energy: i32,
@@ -11,6 +12,8 @@ pub struct PlayerData {
     pub gold_acc: i32,
     pub exp: i32,
     pub last_updated: NaiveDateTime,
+    pub player_stats_id: Option<uuid::Uuid>,
+    pub player_inventory_id: Option<uuid::Uuid>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
@@ -24,7 +27,7 @@ pub struct PlayerFactories {
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
 #[table_name = "player_inventory"]
-pub struct PlayerInvetory {
+pub struct PlayerInventory {
     pub id: uuid::Uuid,
     pub player_data_id: uuid::Uuid,
     pub food_q1: i32,

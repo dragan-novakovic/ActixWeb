@@ -2,7 +2,11 @@ use actix_web::{web, Error, HttpResponse};
 use diesel::prelude::*;
 use uuid;
 
-use crate::model::{factory::Factory, player::PlayerFactories};
+use crate::model::{
+    factory::Factory,
+    player::{PlayerData, PlayerFactories, PlayerInventory},
+    user::User,
+};
 use crate::share::db::Pool;
 
 fn query_get_factories(pool: web::Data<Pool>) -> Result<Vec<Factory>, diesel::result::Error> {
@@ -127,17 +131,57 @@ pub async fn add_player_factories(
     )
 }
 
+/// diesel::work at specific company => - 10 energy + products
 fn work_query(
     payload: web::Json<PlayerPayload>,
     pool: web::Data<Pool>,
-) -> Result<PlayerFactories, diesel::result::Error> {
+) -> Result<String, diesel::result::Error> {
     use crate::schema::factories::dsl::{factories, gold_per_day, id};
     use crate::schema::player_factories::dsl::{amount, factory_id, player_factories, user_id};
-    use crate::schema::players_data::dsl::{gold_acc, players_data};
+    use crate::schema::player_inventory::dsl::{
+        food_q1, player_data_id, player_inventory, weapon_q1,
+    };
+    use crate::schema::players_data::dsl::{energy, gold_acc, players_data};
+    use crate::schema::users::dsl::users;
     let conn: &PgConnection = &pool.get().unwrap();
+
+    let current_factory = factories
+        .filter(id.eq(&payload.factory_id))
+        .first::<Factory>(conn)
+        .unwrap();
+
+    let player: User = users.find(&payload.user_id).first(conn).unwrap();
+
+    let storage: PlayerInventory = player_inventory
+        .filter(player_data_id.eq(&player.player_data_id))
+        .first(conn)
+        .unwrap();
+
     // ?. check if has storage space
+    let current_storage = storage.food_q1 + storage.weapon_q1;
+
+    if storage.capacity < current_storage + current_factory.product_amount {
+        return Ok("Cappacity Reached".to_owned());
+    }
+
     // 1. Take from player_data -10 energy
+    diesel::update(players_data)
+        .set(energy.eq(energy - 10))
+        .execute(conn)
+        .unwrap();
     // 2. add specific factory product to player inventory
+    if current_factory.product == "food".to_owned() {
+        diesel::update(player_inventory)
+            .set(food_q1.eq(food_q1 + current_factory.product_amount))
+            .execute(conn)
+            .unwrap();
+    }
+    if current_factory.product == "weapon".to_owned() {
+        diesel::update(player_inventory)
+            .set(weapon_q1.eq(weapon_q1 + current_factory.product_amount))
+            .execute(conn)
+            .unwrap();
+    }
 
     let item = player_factories
         .filter(user_id.eq(&payload.user_id))
@@ -145,17 +189,17 @@ fn work_query(
         .get_result::<PlayerFactories>(conn)
         .optional()?;
 
-    let new_factories = match item {
+    match item {
         Some(data) => {
             let new_amount = data.amount + 1;
 
-            let updated = diesel::update(player_factories)
+            let _updated = diesel::update(player_factories)
                 .filter(user_id.eq(&payload.user_id))
                 .filter(factory_id.eq(&payload.factory_id))
                 .set(amount.eq(new_amount))
-                .get_result(conn)?;
+                .get_result::<PlayerFactories>(conn)?;
 
-            Ok(updated)
+            // Ok(updated)
         }
         None => {
             let new_factories = PlayerFactories {
@@ -169,22 +213,17 @@ fn work_query(
                 .values(&new_factories)
                 .execute(conn)?;
 
-            Ok(new_factories)
+            // Ok(new_factories)
         }
     };
 
-    let gold = factories
-        .filter(id.eq(&payload.factory_id))
-        .select(gold_per_day)
-        .first::<i32>(conn)
-        .unwrap();
-
     diesel::update(players_data)
-        .set(gold_acc.eq(gold_acc + gold))
+        .set(gold_acc.eq(gold_acc + current_factory.gold_per_day))
         .execute(conn)
         .unwrap();
 
-    new_factories
+    //new_factories
+    Ok("Success work".to_owned())
 }
 
 /// work at specific company => - 10 energy + products

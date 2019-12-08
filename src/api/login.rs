@@ -64,6 +64,8 @@ impl
                 exp: tup.7,
                 last_updated: tup.8,
                 gold_acc: tup.9,
+                player_stats_id: None,
+                player_inventory_id: None,
             },
         }
     }

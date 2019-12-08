@@ -2,14 +2,17 @@ use actix_web::{web, Error, HttpResponse};
 use diesel::prelude::*;
 
 use crate::model::{
-    player::PlayerData,
+    player::{PlayerData, PlayerInventory, PlayerStats},
     user::{NewUser, User},
 };
 use crate::share::db::Pool;
 
 fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::result::Error> {
+    use crate::schema::player_inventory::dsl::player_inventory;
+    use crate::schema::player_stats::dsl::player_stats;
     use crate::schema::players_data::dsl::players_data;
     use crate::schema::users::dsl::{id, users};
+
     let conn: &PgConnection = &pool.get().unwrap();
 
     let new_player_data = PlayerData {
@@ -19,6 +22,8 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         gold_acc: 0,
         exp: 0,
         last_updated: chrono::Utc::now().naive_utc(),
+        player_stats_id: None,
+        player_inventory_id: None,
     };
 
     let new_user = User {
@@ -30,12 +35,35 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         player_data_id: new_player_data.id,
     };
 
+    let new_user_inventory = PlayerInventory {
+        id: uuid::Uuid::new_v4(),
+        player_data_id: new_player_data.id,
+        food_q1: 10,
+        weapon_q1: 0,
+        capacity: 100,
+    };
+    let new_user_stats = PlayerStats {
+        id: uuid::Uuid::new_v4(),
+        player_data_id: new_player_data.id,
+        agility: 1,
+        strength: 1,
+        stamina: 1,
+    };
+
     diesel::insert_into(players_data)
         .values(&new_player_data)
         .execute(conn)
         .unwrap();
     diesel::insert_into(users)
         .values(&new_user)
+        .execute(conn)
+        .unwrap();
+    diesel::insert_into(player_inventory)
+        .values(&new_user_inventory)
+        .execute(conn)
+        .unwrap();
+    diesel::insert_into(player_stats)
+        .values(&new_user_stats)
         .execute(conn)
         .unwrap();
 
