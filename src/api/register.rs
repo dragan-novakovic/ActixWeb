@@ -48,24 +48,27 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         player_data_id: new_player_data.id,
     };
 
-    diesel::insert_into(players_data)
-        .values(&new_player_data)
-        .execute(conn)
-        .unwrap();
-    diesel::insert_into(users)
-        .values(&new_user)
-        .execute(conn)
-        .unwrap();
     diesel::insert_into(player_inventory)
         .values(&new_user_inventory)
         .execute(conn)
-        .unwrap();
+        .expect("player_inv");
     diesel::insert_into(player_stats)
         .values(&new_user_stats)
         .execute(conn)
-        .unwrap();
+        .expect("player_stats");
+    diesel::insert_into(players_data)
+        .values(&new_player_data)
+        .execute(conn)
+        .expect("players_data");
+    diesel::insert_into(users)
+        .values(&new_user)
+        .execute(conn)
+        .expect("users");
 
-    let created_user = users.filter(id.eq(&new_user.id)).get_result(conn).unwrap();
+    let created_user = users
+        .filter(id.eq(&new_user.id))
+        .get_result(conn)
+        .expect("Returning new user");
     Ok(created_user)
 }
 
