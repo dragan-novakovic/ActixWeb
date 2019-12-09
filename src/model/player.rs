@@ -2,6 +2,8 @@ use crate::schema::{player_factories, player_inventory, player_stats, players_da
 use chrono::prelude::*;
 use uuid;
 
+// MODELS PROPERTIES MUST BE IN SAME ORDER AS COLUMNS IN TABLE
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
 #[table_name = "players_data"]
 pub struct PlayerData {
@@ -28,9 +30,10 @@ pub struct PlayerFactories {
 #[table_name = "player_inventory"]
 pub struct PlayerInventory {
     pub id: uuid::Uuid,
+    pub capacity: i32,
     pub food_q1: i32,
     pub weapon_q1: i32,
-    pub capacity: i32,
+    pub special_currency: i32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]

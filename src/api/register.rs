@@ -20,6 +20,7 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         food_q1: 10,
         weapon_q1: 0,
         capacity: 100,
+        special_currency: 0,
     };
     let new_user_stats = PlayerStats {
         id: uuid::Uuid::new_v4(),

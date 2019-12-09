@@ -16,7 +16,7 @@ pub fn users(cfg: &mut web::ServiceConfig) {
             .route(web::head().to(|| HttpResponse::MethodNotAllowed())),
     );
 }
-
+///ADMIN
 pub fn user(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/user/{id}")

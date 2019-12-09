@@ -164,9 +164,11 @@ fn work_query(
 
     // ?. check if has storage space
     let current_storage = storage.food_q1 + storage.weapon_q1;
-
     if storage.capacity < current_storage + current_factory.product_amount {
-        return Ok("Cappacity Reached".to_owned());
+        return Ok(format!(
+            "Cappacity Reached {}: current:{}, new:{}",
+            storage.capacity, current_storage, current_factory.product_amount
+        ));
     }
 
     // 1. Take from player_data -10 energy
@@ -177,15 +179,24 @@ fn work_query(
         .unwrap();
     // 2. add specific factory product to player inventory
     if current_factory.product == "food".to_owned() {
+        println!("TESTING FOOD");
         diesel::update(player_inventory)
-            .filter(player_inventory.primary_key().eq(&player.player_data_id))
+            .filter(
+                player_inventory
+                    .primary_key()
+                    .eq(&curr_player_data.player_inventory_id),
+            )
             .set(food_q1.eq(food_q1 + current_factory.product_amount))
             .execute(conn)
             .unwrap();
     }
     if current_factory.product == "weapon".to_owned() {
         diesel::update(player_inventory)
-            .filter(player_inventory.primary_key().eq(&player.player_data_id))
+            .filter(
+                player_inventory
+                    .primary_key()
+                    .eq(&curr_player_data.player_inventory_id),
+            )
             .set(weapon_q1.eq(weapon_q1 + current_factory.product_amount))
             .execute(conn)
             .unwrap();
@@ -204,7 +215,10 @@ fn work_query(
         .unwrap();
 
     //new_factories
-    Ok("Success work".to_owned())
+    Ok(format!(
+        "Success, u earned {} {}",
+        current_factory.product_amount, current_factory.product
+    ))
 }
 
 /// work at specific company => - 10 energy + products
@@ -220,66 +234,40 @@ pub async fn work_factory(
 }
 
 /// delete old company, - resourses, + new company
-/// //! HERE
 fn upgrade_factory_query(
     payload: web::Json<PlayerPayload>,
     pool: web::Data<Pool>,
 ) -> Result<String, diesel::result::Error> {
-    use crate::schema::factories::dsl::{factories, gold_per_day, id};
-    use crate::schema::player_factories::dsl::{amount, factory_id, player_factories, user_id};
-    use crate::schema::player_inventory::dsl::{food_q1, player_inventory, weapon_q1};
-    use crate::schema::players_data::dsl::{energy, gold_acc, players_data};
+    use crate::schema::factories::dsl::{factories, level, product};
+    use crate::schema::player_factories::dsl::{factory_id, player_factories, user_id};
+    use crate::schema::player_inventory::dsl::{player_inventory, special_currency};
+    use crate::schema::players_data::dsl::{gold, gold_acc, players_data};
     use crate::schema::users::dsl::users;
     let conn: &PgConnection = &pool.get().unwrap();
 
     let player: User = users.find(&payload.user_id).first(conn).unwrap();
-    // let current_player_data = players_data
-    //     .find(&player.player_data_id)
-    //     .select(players_data.primary_key(), gold, player_inventory_id)
-    //     .first::<PlayerData>(conn)
-    //     .unwrap();
+    let curr_player_data: PlayerData = players_data
+        .find(&player.player_data_id)
+        .first(conn)
+        .unwrap();
 
-    //1. check if you have enough gold and resourses
-    //2. delete old company
-    //3. remove resourses
-    //4. add new company
-
-    let current_factory = factories
-        .filter(id.eq(&payload.factory_id))
+    let current_factory: Factory = factories
+        .filter(factories.primary_key().eq(&payload.factory_id))
         .first::<Factory>(conn)
         .unwrap();
 
-    let storage: PlayerInventory = player_inventory
+    let inventory: PlayerInventory = player_inventory
         .filter(player_inventory.primary_key().eq(&player.player_data_id))
         .first(conn)
         .unwrap();
 
+    //1. check if you have enough gold and resourses
     // ?. check if has storage space
-    let current_storage = storage.food_q1 + storage.weapon_q1;
-
-    if storage.capacity < current_storage + current_factory.product_amount {
-        return Ok("Cappacity Reached".to_owned());
+    // //! ADD SPECIAL CURRECNCY PRICE !!
+    if curr_player_data.gold < current_factory.price || inventory.special_currency < 10 {
+        return Ok(format!("You don't have enough resourses"));
     }
-
-    // 1. Take from player_data -10 energy
-    diesel::update(players_data)
-        .set(energy.eq(energy - 10))
-        .execute(conn)
-        .unwrap();
-    // 2. add specific factory product to player inventory
-    if current_factory.product == "food".to_owned() {
-        diesel::update(player_inventory)
-            .set(food_q1.eq(food_q1 + current_factory.product_amount))
-            .execute(conn)
-            .unwrap();
-    }
-    if current_factory.product == "weapon".to_owned() {
-        diesel::update(player_inventory)
-            .set(weapon_q1.eq(weapon_q1 + current_factory.product_amount))
-            .execute(conn)
-            .unwrap();
-    }
-
+    //2. delete old company
     let item = player_factories
         .filter(user_id.eq(&payload.user_id))
         .filter(factory_id.eq(&payload.factory_id))
@@ -287,40 +275,55 @@ fn upgrade_factory_query(
         .optional()?;
 
     match item {
-        Some(data) => {
-            let new_amount = data.amount + 1;
-
-            let _updated = diesel::update(player_factories)
-                .filter(user_id.eq(&payload.user_id))
-                .filter(factory_id.eq(&payload.factory_id))
-                .set(amount.eq(new_amount))
-                .get_result::<PlayerFactories>(conn)?;
-
-            // Ok(updated)
+        Some(factory) => {
+            // Delete company,
         }
-        None => {
-            let new_factories = PlayerFactories {
-                id: uuid::Uuid::new_v4(),
-                user_id: payload.user_id,
-                factory_id: payload.factory_id,
-                amount: 1,
-            };
+        None => return Ok(format!("You don't own this factory")),
+    };
+    //3. remove resourses
+    diesel::update(players_data)
+        .filter(players_data.primary_key().eq(&player.player_data_id))
+        .set(gold.eq(gold - current_factory.price))
+        .execute(conn)
+        .unwrap();
 
-            diesel::insert_into(player_factories)
-                .values(&new_factories)
-                .execute(conn)?;
+    diesel::update(player_inventory)
+        .filter(
+            player_inventory
+                .primary_key()
+                .eq(&curr_player_data.player_inventory_id),
+        )
+        .set(special_currency.eq(special_currency - 0))
+        .execute(conn)
+        .unwrap();
+    //4. add new company
+    let new_factory: Factory = factories
+        .filter(product.eq(current_factory.product))
+        .filter(level.eq(current_factory.level + 1))
+        .first(conn)
+        .expect("No factory to upgrade");
 
-            // Ok(new_factories)
-        }
+    let new_factories = PlayerFactories {
+        id: uuid::Uuid::new_v4(),
+        user_id: payload.user_id,
+        factory_id: new_factory.id,
+        amount: 1,
     };
 
+    diesel::insert_into(player_factories)
+        .values(&new_factories)
+        .execute(conn)?;
+
     diesel::update(players_data)
-        .set(gold_acc.eq(gold_acc + current_factory.gold_per_day))
+        .set(gold_acc.eq(gold_acc - current_factory.gold_per_day + new_factory.gold_per_day))
         .execute(conn)
         .unwrap();
 
     //new_factories
-    Ok("Success work".to_owned())
+    Ok(format!(
+        "Successfully upgraded to level {})",
+        new_factory.level
+    ))
 }
 
 /// upgrade company => - resourses + add new factory remove old

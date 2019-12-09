@@ -33,6 +33,7 @@ table! {
         capacity -> Int4,
         food_q1 -> Int4,
         weapon_q1 -> Int4,
+        special_currency -> Int4,
     }
 }
 
