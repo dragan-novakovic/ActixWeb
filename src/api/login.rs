@@ -36,6 +36,8 @@ impl
         i32,
         NaiveDateTime,
         i32,
+        uuid::Uuid,
+        uuid::Uuid,
     )> for UserWithData
 {
     fn from(
@@ -50,6 +52,8 @@ impl
             i32,
             NaiveDateTime,
             i32,
+            uuid::Uuid,
+            uuid::Uuid,
         ),
     ) -> UserWithData {
         UserWithData {
@@ -64,8 +68,8 @@ impl
                 exp: tup.7,
                 last_updated: tup.8,
                 gold_acc: tup.9,
-                player_stats_id: None,
-                player_inventory_id: None,
+                player_stats_id: tup.10,
+                player_inventory_id: tup.11,
             },
         }
     }
@@ -92,7 +96,8 @@ impl UserWithData {
 // /// Diesel query
 fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithData, ()> {
     use crate::schema::players_data::dsl::{
-        energy, exp, gold, gold_acc, last_updated, players_data,
+        energy, exp, gold, gold_acc, last_updated, player_inventory_id, player_stats_id,
+        players_data,
     };
     use crate::schema::users::dsl::{email, id, password, username, users};
     let conn: &PgConnection = &pool.get().unwrap();
@@ -113,6 +118,8 @@ fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithDat
             gold,
             last_updated,
             gold_acc,
+            player_inventory_id,
+            player_stats_id,
         ))
         .filter(email.eq(&auth_data.email))
         .get_result::<(
@@ -126,6 +133,8 @@ fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithDat
             i32,
             NaiveDateTime,
             i32,
+            uuid::Uuid,
+            uuid::Uuid,
         )>(conn)
         .unwrap()
         .into();

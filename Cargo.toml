@@ -34,3 +34,4 @@ dotenv = "0.14"
 dotenv_codegen="0.14.0"
 uuid = { version = "0.6", features = ["serde", "v4"] }
 #juniper = "0.13"
+names = "0.10.0" ## test generates random names

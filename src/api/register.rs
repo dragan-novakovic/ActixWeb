@@ -15,6 +15,19 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
 
     let conn: &PgConnection = &pool.get().unwrap();
 
+    let new_user_inventory = PlayerInventory {
+        id: uuid::Uuid::new_v4(),
+        food_q1: 10,
+        weapon_q1: 0,
+        capacity: 100,
+    };
+    let new_user_stats = PlayerStats {
+        id: uuid::Uuid::new_v4(),
+        agility: 1,
+        strength: 1,
+        stamina: 1,
+    };
+
     let new_player_data = PlayerData {
         id: uuid::Uuid::new_v4(),
         energy: 100,
@@ -22,8 +35,8 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         gold_acc: 0,
         exp: 0,
         last_updated: chrono::Utc::now().naive_utc(),
-        player_stats_id: None,
-        player_inventory_id: None,
+        player_stats_id: new_user_stats.id,
+        player_inventory_id: new_user_inventory.id,
     };
 
     let new_user = User {
@@ -33,21 +46,6 @@ fn query(new_user_data: NewUser, pool: web::Data<Pool>) -> Result<User, diesel::
         password: new_user_data.password,
         created_on: chrono::Utc::now().naive_utc(),
         player_data_id: new_player_data.id,
-    };
-
-    let new_user_inventory = PlayerInventory {
-        id: uuid::Uuid::new_v4(),
-        player_data_id: new_player_data.id,
-        food_q1: 10,
-        weapon_q1: 0,
-        capacity: 100,
-    };
-    let new_user_stats = PlayerStats {
-        id: uuid::Uuid::new_v4(),
-        player_data_id: new_player_data.id,
-        agility: 1,
-        strength: 1,
-        stamina: 1,
     };
 
     diesel::insert_into(players_data)

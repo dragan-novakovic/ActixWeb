@@ -4,16 +4,15 @@ use uuid;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
 #[table_name = "players_data"]
-///TEMP NULLS ON INV IDS
 pub struct PlayerData {
-    pub id: uuid::Uuid,
     pub energy: i32,
     pub gold: i32,
-    pub gold_acc: i32,
     pub exp: i32,
+    pub id: uuid::Uuid,
     pub last_updated: NaiveDateTime,
-    pub player_stats_id: Option<uuid::Uuid>,
-    pub player_inventory_id: Option<uuid::Uuid>,
+    pub gold_acc: i32,
+    pub player_stats_id: uuid::Uuid,
+    pub player_inventory_id: uuid::Uuid,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
@@ -29,7 +28,6 @@ pub struct PlayerFactories {
 #[table_name = "player_inventory"]
 pub struct PlayerInventory {
     pub id: uuid::Uuid,
-    pub player_data_id: uuid::Uuid,
     pub food_q1: i32,
     pub weapon_q1: i32,
     pub capacity: i32,
@@ -39,7 +37,6 @@ pub struct PlayerInventory {
 #[table_name = "player_stats"]
 pub struct PlayerStats {
     pub id: uuid::Uuid,
-    pub player_data_id: uuid::Uuid,
     pub strength: i32,
     pub agility: i32,
     pub stamina: i32,

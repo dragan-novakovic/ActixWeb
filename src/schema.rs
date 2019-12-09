@@ -30,7 +30,6 @@ table! {
 table! {
     player_inventory (id) {
         id -> Uuid,
-        player_data_id -> Uuid,
         capacity -> Int4,
         food_q1 -> Int4,
         weapon_q1 -> Int4,
@@ -40,7 +39,6 @@ table! {
 table! {
     player_stats (id) {
         id -> Uuid,
-        player_data_id -> Uuid,
         strength -> Int4,
         agility -> Int4,
         stamina -> Int4,
@@ -55,8 +53,8 @@ table! {
         id -> Uuid,
         last_updated -> Timestamp,
         gold_acc -> Int4,
-        player_stats_id -> Nullable<Uuid>,
-        player_inventory_id -> Nullable<Uuid>,
+        player_stats_id -> Uuid,
+        player_inventory_id -> Uuid,
     }
 }
 
@@ -73,6 +71,8 @@ table! {
 
 joinable!(player_factories -> factories (factory_id));
 joinable!(player_factories -> users (user_id));
+joinable!(players_data -> player_inventory (player_inventory_id));
+joinable!(players_data -> player_stats (player_stats_id));
 joinable!(users -> players_data (player_data_id));
 
 allow_tables_to_appear_in_same_query!(
