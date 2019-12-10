@@ -3,8 +3,7 @@ use diesel::prelude::*;
 use uuid;
 
 use crate::model::{
-    factory::Factory,
-    player::{PlayerData, PlayerFactories, PlayerInventory},
+    player::{PlayerData, PlayerInventory},
     user::User,
 };
 use crate::share::db::Pool;
@@ -20,10 +19,8 @@ fn battle_query(
     payload: web::Json<BattlePayload>,
     pool: web::Data<Pool>,
 ) -> Result<String, diesel::result::Error> {
-    // use crate::schema::factories::dsl::factories;
-    // use crate::schema::player_factories::dsl::{amount, factory_id, player_factories, user_id};
-    use crate::schema::player_inventory::dsl::{food_q1, player_inventory, weapon_q1};
-    use crate::schema::players_data::dsl::{energy, gold_acc, players_data};
+    use crate::schema::player_inventory::dsl::{player_inventory, special_currency, weapon_q1};
+    use crate::schema::players_data::dsl::{energy, players_data};
     use crate::schema::users::dsl::users;
     let conn: &PgConnection = &pool.get().unwrap();
 
@@ -32,7 +29,6 @@ fn battle_query(
         .find(&player.player_data_id)
         .first(conn)
         .unwrap();
-
     let storage: PlayerInventory = player_inventory
         .filter(
             player_inventory
@@ -42,29 +38,32 @@ fn battle_query(
         .first(conn)
         .unwrap();
 
-    // ?. check if has storage space
-
-    // 1. Take from player_data -10 energy
+    // check if enough energy
+    if curr_player_data.energy < 10 {
+        return Ok("Not enough energy".to_owned());
+    }
     diesel::update(players_data)
         .filter(players_data.primary_key().eq(&player.player_data_id))
         .set(energy.eq(energy - 10))
         .execute(conn)
         .unwrap();
-    // 2. add specific factory product to player inventory
-    // ?check if he owns that company
-    // let item = player_factories
-    //     .filter(user_id.eq(&payload.user_id))
-    //     .filter(factory_id.eq(&payload.factory_id))
-    //     .get_result::<PlayerFactories>(conn)
-    //     .optional()?;
-
-    // diesel::update(players_data)
-    //     .filter(players_data.primary_key().eq(&player.player_data_id))
-    //     .set(gold_acc.eq(gold_acc + current_factory.gold_per_day))
-    //     .execute(conn)
-    //     .unwrap();
-
-    //new_factories
+    // check if enough resourses
+    if storage.weapon_q1 < 10 {
+        return Ok("Not enough weapons".to_owned());
+    }
+    // give new resourses
+    diesel::update(player_inventory)
+        .filter(
+            player_inventory
+                .primary_key()
+                .eq(&curr_player_data.player_inventory_id),
+        )
+        .set((
+            special_currency.eq(special_currency + 5),
+            weapon_q1.eq(weapon_q1 - 10),
+        ))
+        .execute(conn)
+        .expect("Updating player_iventory loot and wp1");
     Ok(format!("Success"))
 }
 

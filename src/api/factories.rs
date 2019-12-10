@@ -239,7 +239,7 @@ fn upgrade_factory_query(
     pool: web::Data<Pool>,
 ) -> Result<String, diesel::result::Error> {
     use crate::schema::factories::dsl::{factories, level, product};
-    use crate::schema::player_factories::dsl::{factory_id, player_factories, user_id};
+    use crate::schema::player_factories::dsl::{amount, factory_id, player_factories, user_id};
     use crate::schema::player_inventory::dsl::{player_inventory, special_currency};
     use crate::schema::players_data::dsl::{gold, gold_acc, players_data};
     use crate::schema::users::dsl::users;
@@ -262,7 +262,7 @@ fn upgrade_factory_query(
         .unwrap();
 
     //1. check if you have enough gold and resourses
-    // ?. check if has storage space
+    // check if has storage space
     // //! ADD SPECIAL CURRECNCY PRICE !!
     if curr_player_data.gold < current_factory.price || inventory.special_currency < 10 {
         return Ok(format!("You don't have enough resourses"));
@@ -274,12 +274,28 @@ fn upgrade_factory_query(
         .get_result::<PlayerFactories>(conn)
         .optional()?;
 
-    match item {
+    let _item_test = match item {
         Some(factory) => {
-            // Delete company,
+            if factory.amount > 1 {
+                diesel::update(player_factories)
+                    .filter(user_id.eq(&payload.user_id))
+                    .filter(factory_id.eq(&payload.factory_id))
+                    .set(amount.eq(amount - 1))
+                    .execute(conn)
+                    .expect("Updating player_factories amount");
+            } else {
+                diesel::delete(
+                    player_factories
+                        .filter(user_id.eq(&payload.user_id))
+                        .filter(factory_id.eq(&payload.factory_id)),
+                )
+                .execute(conn)
+                .expect("Deleting old Factory");
+            }
         }
         None => return Ok(format!("You don't own this factory")),
     };
+
     //3. remove resourses
     diesel::update(players_data)
         .filter(players_data.primary_key().eq(&player.player_data_id))
