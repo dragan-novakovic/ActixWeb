@@ -1,5 +1,6 @@
 use actix_web::{web, HttpResponse};
 
+use crate::api::battle::battle;
 use crate::api::factories::{
     add_player_factories, get_factories, get_player_factories, upgrade_factory, work_factory,
 };
@@ -53,6 +54,10 @@ pub fn work_factories(cfg: &mut web::ServiceConfig) {
 
 pub fn upgrade_factories(cfg: &mut web::ServiceConfig) {
     cfg.service(web::resource("/upgradefactory").route(web::post().to(upgrade_factory)));
+}
+
+pub fn battle_controller(cfg: &mut web::ServiceConfig) {
+    cfg.service(web::resource("/battle").route(web::post().to(battle)));
 }
 
 pub fn get_time(cfg: &mut web::ServiceConfig) {

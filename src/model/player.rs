@@ -17,6 +17,21 @@ pub struct PlayerData {
     pub player_inventory_id: uuid::Uuid,
 }
 
+impl Default for PlayerData {
+    fn default() -> PlayerData {
+        PlayerData {
+            energy: 100,
+            gold: 50,
+            exp: 0,
+            id: uuid::Uuid::new_v4(),
+            last_updated: chrono::Utc::now().naive_utc(),
+            gold_acc: 10,
+            player_stats_id: uuid::Uuid::new_v4(),
+            player_inventory_id: uuid::Uuid::new_v4(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
 #[table_name = "player_factories"]
 pub struct PlayerFactories {
@@ -24,6 +39,17 @@ pub struct PlayerFactories {
     pub user_id: uuid::Uuid,
     pub factory_id: uuid::Uuid,
     pub amount: i32,
+}
+
+impl Default for PlayerFactories {
+    fn default() -> PlayerFactories {
+        PlayerFactories {
+            id: uuid::Uuid::new_v4(),
+            user_id: uuid::Uuid::new_v4(),
+            factory_id: uuid::Uuid::new_v4(),
+            amount: 0,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
@@ -36,6 +62,18 @@ pub struct PlayerInventory {
     pub special_currency: i32,
 }
 
+impl Default for PlayerInventory {
+    fn default() -> PlayerInventory {
+        PlayerInventory {
+            id: uuid::Uuid::new_v4(),
+            capacity: 100,
+            food_q1: 10,
+            weapon_q1: 0,
+            special_currency: 0,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Queryable, Insertable)]
 #[table_name = "player_stats"]
 pub struct PlayerStats {
@@ -43,4 +81,15 @@ pub struct PlayerStats {
     pub strength: i32,
     pub agility: i32,
     pub stamina: i32,
+}
+
+impl Default for PlayerStats {
+    fn default() -> PlayerStats {
+        PlayerStats {
+            id: uuid::Uuid::new_v4(),
+            strength: 1,
+            agility: 1,
+            stamina: 1,
+        }
+    }
 }
