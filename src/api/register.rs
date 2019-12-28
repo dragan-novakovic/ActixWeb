@@ -99,7 +99,7 @@ fn query_delete(
 }
 
 pub async fn delete_user(
-    id: web::Path<(uuid::Uuid)>,
+    id: web::Path<uuid::Uuid>,
     pool: web::Data<Pool>,
 ) -> Result<HttpResponse, Error> {
     Ok(web::block(move || query_delete(id.into_inner(), pool))

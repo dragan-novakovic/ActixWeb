@@ -8,11 +8,11 @@ edition = "2018"
 # cargo watch -x run
 
 [dependencies]
-actix-rt = "1.0.0-alpha.3"
-actix-web = "2.0.0-alpha.3"
-actix-files = "0.2.0-alpha.3"
-actix-session = "0.3.0-alpha.3"
-actix-utils = "1.0.0-alpha.3"
+actix-rt = "1.0.0"
+actix-web = "2.0.0"
+actix-files = "0.2.1"
+actix-session = "0.3.0"
+actix-utils = "1.0.4"
 futures = "0.3.1"
 actix = "0.8.2"
 #actix-identity = "0.1.0"
