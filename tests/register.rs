@@ -1,19 +1,19 @@
-#[cfg(test)]
-mod tests {
-    use actix_web::{http, test, web, Error, HttpResponse};
+// #[cfg(test)]
+// mod tests {
+//     use actix_web::{http, test, web, Error, HttpResponse};
 
-    // #[actix_rt::test]
-    // async fn test_index() {
-    //     let req = test::TestRequest::with_header("content-type", "text/plain").to_http_request();
+//     #[actix_rt::test]
+//     async fn test_index() {
+//         let req = test::TestRequest::with_header("content-type", "text/plain").to_http_request();
 
-    //     let resp = factories(req).await.unwrap();
-    //     assert_eq!(resp.status(), http::StatusCode::OK);
+//         let resp = factories(req).await.unwrap();
+//         assert_eq!(resp.status(), http::StatusCode::OK);
 
-    //     let req = test::TestRequest::default().to_http_request();
-    //     let resp = factories(req).await.unwrap();
-    //     assert_eq!(resp.status(), http::StatusCode::BAD_REQUEST);
-    // }
-}
+//         let req = test::TestRequest::default().to_http_request();
+//         let resp = factories(req).await.unwrap();
+//         assert_eq!(resp.status(), http::StatusCode::BAD_REQUEST);
+//     }
+// }
 
 // #[actix_rt::test]
 // async fn test_request_response_form() {
