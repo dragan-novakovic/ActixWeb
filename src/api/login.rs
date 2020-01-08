@@ -136,7 +136,7 @@ fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithDat
             uuid::Uuid,
             uuid::Uuid,
         )>(conn)
-        .unwrap()
+        .expect("User With Data Error (Join)")
         .into();
 
     diesel::update(players_data)
@@ -145,7 +145,7 @@ fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithDat
             last_updated.eq(chrono::Utc::now().naive_utc()),
         ))
         .execute(conn)
-        .unwrap();
+        .expect("Updating player data (Login)");
 
     match item.password == auth_data.password {
         true => Ok(item.update_gold().remove_pass()),
@@ -157,7 +157,7 @@ fn query_list(pool: web::Data<Pool>) -> Result<Vec<User>, diesel::result::Error>
     use crate::schema::users::dsl::*;
     let conn: &PgConnection = &pool.get().unwrap();
 
-    let items = users.load::<User>(conn).unwrap();
+    let items = users.load::<User>(conn).expect("Loading users list");
     Ok(items)
 }
 
@@ -169,7 +169,7 @@ pub async fn login_user(
         .await
         .map(|user| HttpResponse::Ok().json(user))
         .map_err(|_| HttpResponse::InternalServerError())
-        .unwrap())
+        .expect("General login_user error?"))
 }
 
 pub async fn get_user(pool: web::Data<Pool>) -> Result<HttpResponse, Error> {
@@ -177,7 +177,7 @@ pub async fn get_user(pool: web::Data<Pool>) -> Result<HttpResponse, Error> {
         .await
         .map(|user| HttpResponse::Ok().json(user))
         .map_err(|_| HttpResponse::InternalServerError())
-        .unwrap())
+        .expect("Get_user general"))
 }
 
 // pub fn get_player_inventory(

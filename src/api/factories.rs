@@ -127,7 +127,7 @@ pub async fn add_player_factories(
             .await
             .map(|user| HttpResponse::Ok().json(user))
             .map_err(|_| HttpResponse::InternalServerError())
-            .unwrap(),
+            .expect("General buying new factory"),
     )
 }
 /// diesel::work at specific company => - 10 energy + products
@@ -245,21 +245,29 @@ fn upgrade_factory_query(
     use crate::schema::users::dsl::users;
     let conn: &PgConnection = &pool.get().unwrap();
 
-    let player: User = users.find(&payload.user_id).first(conn).unwrap();
+    let player: User = users
+        .find(&payload.user_id)
+        .first(conn)
+        .expect("Cant Find Player");
     let curr_player_data: PlayerData = players_data
         .find(&player.player_data_id)
         .first(conn)
-        .unwrap();
+        .expect("No player data");
 
     let current_factory: Factory = factories
         .filter(factories.primary_key().eq(&payload.factory_id))
         .first::<Factory>(conn)
-        .unwrap();
+        .expect("Cant Find Factory");
 
+    //  dbg!(&player);
     let inventory: PlayerInventory = player_inventory
-        .filter(player_inventory.primary_key().eq(&player.player_data_id))
+        .filter(
+            player_inventory
+                .primary_key()
+                .eq(&curr_player_data.player_inventory_id),
+        )
         .first(conn)
-        .unwrap();
+        .expect("Cant Find Inventory");
 
     //1. check if you have enough gold and resourses
     // check if has storage space
@@ -301,7 +309,7 @@ fn upgrade_factory_query(
         .filter(players_data.primary_key().eq(&player.player_data_id))
         .set(gold.eq(gold - current_factory.price))
         .execute(conn)
-        .unwrap();
+        .expect("Can't update inventory");
 
     diesel::update(player_inventory)
         .filter(
@@ -311,7 +319,7 @@ fn upgrade_factory_query(
         )
         .set(special_currency.eq(special_currency - 0))
         .execute(conn)
-        .unwrap();
+        .expect("Can't update inventory");
     //4. add new company
     let new_factory: Factory = factories
         .filter(product.eq(current_factory.product))
@@ -333,11 +341,11 @@ fn upgrade_factory_query(
     diesel::update(players_data)
         .set(gold_acc.eq(gold_acc - current_factory.gold_per_day + new_factory.gold_per_day))
         .execute(conn)
-        .unwrap();
+        .expect("Updating player_data Err");
 
     //new_factories
     Ok(format!(
-        "Successfully upgraded to level {})",
+        "Successfully upgraded to level {}",
         new_factory.level
     ))
 }
@@ -349,7 +357,7 @@ pub async fn upgrade_factory(
 ) -> Result<HttpResponse, Error> {
     Ok(web::block(move || upgrade_factory_query(player_data, pool))
         .await
-        .map(|user| HttpResponse::Ok().json(user))
+        .map(|result| HttpResponse::Ok().json(result))
         .map_err(|_| HttpResponse::InternalServerError())
-        .unwrap())
+        .expect("General upgrade factory Error"))
 }

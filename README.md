@@ -1,5 +1,9 @@
 # To - Do
 
+- work, energy, and tests
+
+# Later
+
 - implement actix-identity
 - JWT and crsf
 - CORS
@@ -36,6 +40,9 @@
 
 - ["/buyFactories"]  
   POST - Update player_factory
+
+- ["/upgradefactory"]  
+  POST - Upgrade player_factory
 
 - ["/time"]  
   GET - Get current server time (UTC)
