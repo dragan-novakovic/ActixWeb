@@ -309,7 +309,7 @@ fn upgrade_factory_query(
         .filter(players_data.primary_key().eq(&player.player_data_id))
         .set(gold.eq(gold - current_factory.price))
         .execute(conn)
-        .expect("Can't update inventory");
+        .expect("Error updating player_data gold");
 
     diesel::update(player_inventory)
         .filter(
@@ -319,7 +319,7 @@ fn upgrade_factory_query(
         )
         .set(special_currency.eq(special_currency - 0))
         .execute(conn)
-        .expect("Can't update inventory");
+        .expect("Can't update special currency");
     //4. add new company
     let new_factory: Factory = factories
         .filter(product.eq(current_factory.product))

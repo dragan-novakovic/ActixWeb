@@ -4,7 +4,7 @@ use crate::api::battle::battle;
 use crate::api::factories::{
     add_player_factories, get_factories, get_player_factories, upgrade_factory, work_factory,
 };
-use crate::api::login::{get_user, login_user};
+use crate::api::login::{get_player_inventory, get_user, login_user};
 use crate::api::register::{create_user, delete_user};
 use crate::api::time::get_time_handler;
 
@@ -23,6 +23,15 @@ pub fn user(cfg: &mut web::ServiceConfig) {
         web::resource("/user/{id}")
             .data(web::JsonConfig::default().limit(4096))
             .route(web::delete().to(delete_user))
+            .route(web::head().to(|| HttpResponse::MethodNotAllowed())),
+    );
+}
+
+pub fn storage(cfg: &mut web::ServiceConfig) {
+    cfg.service(
+        web::resource("/storage")
+            .data(web::JsonConfig::default().limit(4096))
+            .route(web::post().to(get_player_inventory))
             .route(web::head().to(|| HttpResponse::MethodNotAllowed())),
     );
 }

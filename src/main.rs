@@ -93,6 +93,7 @@ async fn main() -> io::Result<()> {
             .configure(router::work_factories)
             .configure(router::upgrade_factories)
             .configure(router::battle_controller)
+            .configure(router::storage)
             // webSockets
             // .service(web::resource("/ws/").route(web::get().to(share::web_sockets::ws_index)))
             // static files

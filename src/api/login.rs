@@ -5,7 +5,7 @@ use diesel::prelude::*;
 
 use crate::api::time::get_current_time_diff;
 use crate::model::player::PlayerData;
-use crate::model::user::User;
+use crate::model::user::{User, UserId};
 use crate::share::db::Pool;
 
 /// CHECK FOR DATETIME IF NOT NOW UPDATE !!!
@@ -180,11 +180,25 @@ pub async fn get_user(pool: web::Data<Pool>) -> Result<HttpResponse, Error> {
         .expect("Get_user general"))
 }
 
-// pub fn get_player_inventory(
-//     pool: web::Data<Pool>,
-// ) -> impl Future<Item = HttpResponse, Error = Error> {
-//     web::block(move || query_list(pool)).then(|res| match res {
-//         Ok(user) => Ok(HttpResponse::Ok().json(user)),
-//         Err(_) => Ok(HttpResponse::InternalServerError().into()),
-//     })
-// }
+///USER INVENTORY
+fn query_user_inventory(
+    _user: web::Json<UserId>,
+    pool: web::Data<Pool>,
+) -> Result<Vec<User>, diesel::result::Error> {
+    use crate::schema::users::dsl::*;
+    let conn: &PgConnection = &pool.get().unwrap();
+
+    let items = users.load::<User>(conn).expect("Loading users list");
+    Ok(items)
+}
+
+pub async fn get_player_inventory(
+    user: web::Json<UserId>,
+    pool: web::Data<Pool>,
+) -> Result<HttpResponse, Error> {
+    Ok(web::block(move || query_user_inventory(user, pool))
+        .await
+        .map(|user| HttpResponse::Ok().json(user))
+        .map_err(|_| HttpResponse::InternalServerError())
+        .expect("Get_user general"))
+}

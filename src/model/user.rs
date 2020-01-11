@@ -26,3 +26,8 @@ pub struct NewUser {
     pub email: String,
     pub password: String,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct UserId {
+    pub id: uuid::Uuid,
+}
