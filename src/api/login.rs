@@ -4,8 +4,8 @@ use chrono::prelude::*;
 use diesel::prelude::*;
 
 use crate::api::time::get_current_time_diff;
-use crate::model::player::PlayerData;
-use crate::model::user::{User, UserId};
+use crate::model::player::{PlayerData, PlayerInventory};
+use crate::model::user::{User, UserInventoryId};
 use crate::share::db::Pool;
 
 /// CHECK FOR DATETIME IF NOT NOW UPDATE !!!
@@ -93,7 +93,6 @@ impl UserWithData {
     }
 }
 
-// /// Diesel query
 fn query_login(auth_data: AuthData, pool: web::Data<Pool>) -> Result<UserWithData, ()> {
     use crate::schema::players_data::dsl::{
         energy, exp, gold, gold_acc, last_updated, player_inventory_id, player_stats_id,
@@ -182,18 +181,22 @@ pub async fn get_user(pool: web::Data<Pool>) -> Result<HttpResponse, Error> {
 
 ///USER INVENTORY
 fn query_user_inventory(
-    _user: web::Json<UserId>,
+    user: web::Json<UserInventoryId>,
     pool: web::Data<Pool>,
-) -> Result<Vec<User>, diesel::result::Error> {
-    use crate::schema::users::dsl::*;
+) -> Result<PlayerInventory, diesel::result::Error> {
+    use crate::schema::player_inventory::dsl::player_inventory;
     let conn: &PgConnection = &pool.get().unwrap();
 
-    let items = users.load::<User>(conn).expect("Loading users list");
+    let items = player_inventory
+        .find(user.inventory_id)
+        .first(conn)
+        .expect("No Inventory Found");
+
     Ok(items)
 }
 
 pub async fn get_player_inventory(
-    user: web::Json<UserId>,
+    user: web::Json<UserInventoryId>,
     pool: web::Data<Pool>,
 ) -> Result<HttpResponse, Error> {
     Ok(web::block(move || query_user_inventory(user, pool))
