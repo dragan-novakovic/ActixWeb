@@ -68,8 +68,8 @@ impl
                 exp: tup.7,
                 last_updated: tup.8,
                 gold_acc: tup.9,
-                player_stats_id: tup.10,
-                player_inventory_id: tup.11,
+                player_inventory_id: tup.10,
+                player_stats_id: tup.11,
             },
         }
     }
@@ -186,7 +186,7 @@ fn query_user_inventory(
 ) -> Result<PlayerInventory, diesel::result::Error> {
     use crate::schema::player_inventory::dsl::player_inventory;
     let conn: &PgConnection = &pool.get().unwrap();
-
+    dbg!(&user);
     let items = player_inventory
         .find(user.inventory_id)
         .first(conn)
@@ -203,5 +203,5 @@ pub async fn get_player_inventory(
         .await
         .map(|user| HttpResponse::Ok().json(user))
         .map_err(|_| HttpResponse::InternalServerError())
-        .expect("Get_user general"))
+        .expect("Get_player inventory general"))
 }
